@@ -1,0 +1,7 @@
+name = MailJet Simple
+description = Provides a simple mailjet subscription module
+core = 7.x
+
+dependencies[] = composer_manager
+
+files[] = includes/mailjet_simple.api.inc

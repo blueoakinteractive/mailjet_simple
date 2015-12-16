@@ -1,0 +1,209 @@
+<?php
+/**
+ * @file
+ * Provides a simple MailJet subscription implementation.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function mailjet_simple_menu() {
+  $items = [];
+
+  $items['admin/config/services/mailjet-simple'] = array(
+    'title' => 'Mailjet Simple',
+    'description' => t('Configure Mailjet Simple Module Settings.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailjet_simple_admin_settings_form'),
+    'access arguments' => array('administer mailjet simple'),
+    'file' => 'includes/mailjet_simple.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mailjet_simple_permission() {
+  return array(
+    'administer mailjet simple' => array(
+      'title' => t('administer mailjet simple'),
+      'description' => t('Access the Mailjet Simple configuration options.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mailjet_simple_form_user_register_form_alter(&$form, &$form_state) {
+  // Add the Mailjet simple registration fields to the form.
+  mailjet_simple_get_subscription_form($form);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mailjet_simple_form_user_profile_form_alter(&$form, &$form_state) {
+  // Add the Mailjet simple registration fields to the form.
+  mailjet_simple_get_subscription_form($form);
+}
+
+/**
+ * @param $form array
+ *   The form array to append the Mailjet signup options to.
+ */
+function mailjet_simple_get_subscription_form(&$form) {
+  if (!empty($form['#user']->uid)) {
+    $account = $form['#user'];
+  }
+  else {
+    $account = menu_get_object('user', 1);
+  }
+
+  if (!empty($account)) {
+    $lists = mailjet_simple_get_list_ids_by_mail($account->mail);
+  }
+
+  $options = mailjet_simple_options_list();
+
+  if (!empty($options)) {
+    $form['mailjet_simple'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Newsletters'),
+      '#description' => t('Select the newsletter(s) you would like to be subscribed to.'),
+      '#tree' => TRUE,
+      '#weight' => 100,
+    );
+
+    $form['mailjet_simple']['contact_lists'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $options,
+      '#default_value' => !empty($lists) ? $lists : [],
+    );
+
+    $form['#submit'][] = 'mailjet_simple_user_register_form_submit';
+
+    if (empty($form['actions']['#weight'])) {
+      $form['actions']['#weight'] = 101;
+    }
+  }
+}
+
+/**
+ * Submit callback for the user registration page.
+ */
+function mailjet_simple_user_register_form_submit($form, &$form_state) {
+  if (!empty($form_state['values']['mailjet_simple']['contact_lists'])) {
+    $api = mailjet_simple_get_api();
+    $values = array(
+      'Email' => $form_state['values']['mail'],
+    );
+
+    $lists = [];
+    // Build an array of lists to subscribe the user to.
+    foreach ($form_state['values']['mailjet_simple']['contact_lists'] as $list_id => $selected) {
+      $lists[] = [
+        'ListId' => $list_id,
+        'Action' => !empty($selected) ? 'addforce' : 'unsub',
+      ];
+    }
+
+    // Allow other modules to update the values array.
+    drupal_alter('mailjet_simple_update_contact_submit', $values, $lists, $form_state);
+
+    // Create the contact object in Mailjet.
+    $contact = $api->updateContact($values, $lists);
+  }
+}
+
+/**
+ * Returns an array of list ids that the email address is subscribed to.
+ *
+ * @param $mail string
+ *   A valid email address
+ *
+ * @return array
+ */
+function mailjet_simple_get_list_ids_by_mail($mail) {
+  $list_ids = [];
+
+  $mailjet = mailjet_simple_get_api();
+
+  if ($mailjet) {
+    $lists = $mailjet->getListsByEmail($mail);
+    foreach ($lists as $list) {
+      if ($list['IsActive'] && !$list['IsUnsub']) {
+        $list_ids[$list['ListID']] = $list['ListID'];
+      }
+    }
+  }
+
+  return $list_ids;
+}
+
+/**
+ * Returns an options array of available contact lists.
+ *
+ * @param $api boolean
+ *    TRUE to fetch the available list from the API.
+ *    FALSE to fetch the available list from settings.
+ *
+ * @return array
+ */
+function mailjet_simple_options_list($api = FALSE) {
+  $options = [];
+
+  // Fetch the available lists from the API.
+  if ($api) {
+    $mailjet = mailjet_simple_get_api();
+
+    if ($mailjet) {
+      $lists = $mailjet->getContactLists();
+      foreach ($lists as $list) {
+        $options[$list['ID']] = check_plain($list['Name']);
+      }
+    }
+  }
+
+  // Fetch the enabled lists from settings.
+  else {
+    $settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
+    foreach ($settings['enabled_lists'] as $list_id => $enabled_list) {
+      if (empty($enabled_list)) {
+        unset($settings['lists'][$list_id]);
+      }
+    }
+    return $settings['lists'];
+  }
+
+  return $options;
+}
+
+/**
+ * Bootstraps the MailJet API.
+ *
+ * @return \MailJetSimple
+ */
+function mailjet_simple_get_api() {
+  $settings = variable_get('mailjet_simple_settings');
+  try {
+    return new MailJetSimple($settings['public_key'], $settings['private_key']);
+  } catch (Exception $ex) {
+    watchdog('mailjet_simple', t('Unable to bootstrap MailJet API'));
+    return NULL;
+  }
+}
+
+/**
+ * Defines default settings array.
+ */
+function mailjet_simple_settings_defaults() {
+  return [
+    'public_key' => '',
+    'private_key' => '',
+    'lists' => [],
+  ];
+}
