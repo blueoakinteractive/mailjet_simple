@@ -36,6 +36,34 @@ function mailjet_simple_permission() {
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function mailjet_simple_block_info() {
+  return [
+    'mailjet_simple_newsletter' => [
+      'info' => t('Mailjet Simple Newsletter Block'),
+      'cache' => DRUPAL_NO_CACHE,
+    ]
+  ];
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function mailjet_simple_block_view($delta = '') {
+  $block = [];
+  switch ($delta) {
+    case 'mailjet_simple_newsletter':
+      $form = drupal_get_form('mailjet_simple_newsletter_block_form');
+      $block = [
+        'content' => $form,
+      ];
+      break;
+  }
+  return $block;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  */
 function mailjet_simple_form_user_register_form_alter(&$form, &$form_state) {
@@ -52,6 +80,33 @@ function mailjet_simple_form_user_register_form_alter(&$form, &$form_state) {
 function mailjet_simple_form_user_profile_form_alter(&$form, &$form_state) {
   // Add the Mailjet simple registration fields to the form.
   mailjet_simple_get_subscription_form($form);
+}
+
+/**
+ * Block form callback.
+ */
+function mailjet_simple_newsletter_block_form($form, &$form_state) {
+  global $user;
+
+  if (!empty($user->uid)) {
+    // Add fields that the submit handler expects.
+    $form['#user'] = $user;
+    $form['mail'] = [
+      '#type' => 'value',
+      '#value' => $user->mail,
+    ];
+
+    mailjet_simple_get_subscription_form($form);
+
+    $form['actions'] += [
+      'submit' => [
+        '#type' => 'submit',
+        '#value' => t('Save'),
+      ],
+    ];
+  }
+
+  return $form;
 }
 
 /**
