@@ -4,7 +4,6 @@
  * Provides API implementation of MailJet.
  */
 
-require 'vendor/autoload.php';
 use \Mailjet\Resources;
 
 class MailJetSimple {
