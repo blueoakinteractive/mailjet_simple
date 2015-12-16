@@ -73,7 +73,7 @@ function mailjet_simple_get_subscription_form(&$form) {
     $form['mailjet_simple'] = array(
       '#type' => 'fieldset',
       '#title' => t('Newsletters'),
-      '#description' => t('Select the newsletter(s) you would like to be subscribed to.'),
+      '#description' => t('Select the newsletter(s) to which you would like to be subscribed.'),
       '#tree' => TRUE,
       '#weight' => 100,
     );
