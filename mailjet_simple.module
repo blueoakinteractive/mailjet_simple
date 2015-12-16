@@ -71,7 +71,7 @@ function mailjet_simple_form_user_register_form_alter(&$form, &$form_state) {
   mailjet_simple_get_subscription_form($form);
 
   // Default to opt-in on the user registration page.
-  $form['mailjet_simple']['contact_lists']['#default_value'] = array_keys($form['mailjet_simple']['contact_lists']['#options']);
+  $form['mailjet_simple']['contact_lists']['#default_value'] = drupal_map_assoc(array_keys($form['mailjet_simple']['contact_lists']['#options']));
 }
 
 /**
