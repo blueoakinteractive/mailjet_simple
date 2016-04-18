@@ -72,11 +72,15 @@ class MailJetSimple {
 
     // Fetch the contact record from the recipient response.
     if ($response->success()) {
-      $data = reset($response->getData());
-      if (!empty($data)) {
-        $contact_response = $this->api->get(Resources::$Contact, ['id' => $data['ContactID']]);
+      // One record per subscription is returned, we only need the first item to get the ID.
+      $recipients = $response->getData();
+      $recipient = reset($recipients);
+      if (!empty($recipient)) {
+        $contact_response = $this->api->get(Resources::$Contact, ['id' => $recipient['ContactID']]);
         if ($contact_response->success()) {
-          return reset($contact_response->getData());
+          // Only one contact is returned, but it's an array of results.
+          $contacts = $contact_response->getData();
+          return reset($contacts);
         }
       }
     }
