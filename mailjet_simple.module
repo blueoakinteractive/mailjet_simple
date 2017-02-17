@@ -4,6 +4,8 @@
  * Provides a simple MailJet subscription implementation.
  */
 
+define('MAILJET_SIMPLE_UNSUBSCRIBE_ON_CANCEL_DELETE', variable_get('mailjet_simple_unsubscribe_on_cancel_delete') ? variable_get('mailjet_simple_unsubscribe_on_cancel_delete') : variable_set('mailjet_simple_unsubscribe_on_cancel_delete', TRUE));
+
 /**
  * Implements hook_menu().
  */
@@ -268,4 +270,50 @@ function mailjet_simple_settings_defaults() {
     'private_key' => '',
     'lists' => [],
   ];
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function mailjet_simple_user_delete($account) {
+  mailjet_simple_unsubscribe_all_lists($account);
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function mailjet_simple_user_cancel($edit, $account, $method) {
+  mailjet_simple_unsubscribe_all_lists($account);
+}
+
+/**
+ * Helper function to unsubscribe a user from all Mailjet lists.
+ *
+ * @param $account
+ *    User account object to perform unsubscribe routine on.
+ */
+function mailjet_simple_unsubscribe_all_lists($account) {
+  // If $account exists and MAILJET_SIMPLE_UNSUBSCRIBE_ON_CANCEL_DELETE is true
+  // perform unsubscribe routine.
+  if (!empty($account) && MAILJET_SIMPLE_UNSUBSCRIBE_ON_CANCEL_DELETE) {
+    $api = mailjet_simple_get_api();
+    $active_subscription_lists = mailjet_simple_get_list_ids_by_mail($account->mail);
+    $lists = [];
+    $values = array(
+      'Email' => $account->mail,
+    );
+
+    // If the user has active subscriptions force unsubscribe.
+    if (!empty($active_subscription_lists)) {
+      foreach($active_subscription_lists as $list_id => $selected) {
+        $lists[] = [
+          'ListId' => $list_id,
+          'Action' => 'unsub',
+        ];
+
+        // Unsubscribe the contact from all lists in Mailjet.
+        $contact = $api->updateContact($values, $lists);
+      }
+    }
+  }
 }
