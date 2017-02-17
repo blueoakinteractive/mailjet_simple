@@ -28,7 +28,7 @@ function mailjet_simple_admin_settings_form($form) {
         <li>' . t('Save the initial configuration.') . '</li>
         <li>' . t('Select the Mailjet lists that become available once you have entered your API credentials.') . '</li>
         <li>' . t('Re-save this settings form with the lists selected') . '</li>
-    </ul>',
+    </ul><br />',
   );
 
   $form['mailjet_simple_settings']['public_key'] = array(
@@ -59,6 +59,18 @@ function mailjet_simple_admin_settings_form($form) {
       '#value' => $lists,
     );
   }
+
+  $form['mailjet_simple_settings']['additional_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Mailjet Options'),
+    '#tree' => TRUE,
+  );
+  $form['mailjet_simple_settings']['additional_settings']['cancel_delete'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Unsubscribe Users on Delete/Cancel'),
+    '#default_value' => $settings['additional_settings']['cancel_delete'],
+    '#description' => t('Unsubscribe users automatically on user delete or cancel.'),
+  );
 
   return system_settings_form($form);
 }
