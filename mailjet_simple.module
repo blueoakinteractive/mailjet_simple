@@ -277,14 +277,26 @@ function mailjet_simple_settings_defaults() {
  * Implements hook_user_delete().
  */
 function mailjet_simple_user_delete($account) {
-  mailjet_simple_unsubscribe_all_lists($account);
+  $settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
+
+  // If $account exists and $settings['additional_settings']['cancel_delete']
+  // is true perform unsubscribe routine.
+  if (!empty($account) && $settings['additional_settings']['cancel_delete']) {
+    mailjet_simple_unsubscribe_all_lists($account);
+  }
 }
 
 /**
  * Implements hook_user_cancel().
  */
 function mailjet_simple_user_cancel($edit, $account, $method) {
-  mailjet_simple_unsubscribe_all_lists($account);
+  $settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
+
+  // If $account exists and $settings['additional_settings']['cancel_delete']
+  // is true perform unsubscribe routine.
+  if (!empty($account) && $settings['additional_settings']['cancel_delete']) {
+    mailjet_simple_unsubscribe_all_lists($account);
+  }
 }
 
 /**
@@ -294,11 +306,7 @@ function mailjet_simple_user_cancel($edit, $account, $method) {
  *    User account object to perform unsubscribe routine on.
  */
 function mailjet_simple_unsubscribe_all_lists($account) {
-  $settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
-
-  // If $account exists and $settings['additional_settings']['cancel_delete']
-  // is true perform unsubscribe routine.
-  if (!empty($account) && $settings['additional_settings']['cancel_delete']) {
+  if (!empty($account)) {
     $api = mailjet_simple_get_api();
     $active_subscription_lists = mailjet_simple_get_list_ids_by_mail($account->mail);
     $lists = [];
