@@ -1,6 +1,7 @@
 name = MailJet Simple
 description = Provides a simple mailjet subscription module
 core = 7.x
+configure = admin/config/services/mailjet-simple
 
 dependencies[] = composer_manager
 
