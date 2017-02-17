@@ -4,8 +4,6 @@
  * Provides a simple MailJet subscription implementation.
  */
 
-define('MAILJET_SIMPLE_UNSUBSCRIBE_ON_CANCEL_DELETE', variable_get('mailjet_simple_unsubscribe_on_cancel_delete') ? variable_get('mailjet_simple_unsubscribe_on_cancel_delete') : variable_set('mailjet_simple_unsubscribe_on_cancel_delete', TRUE));
-
 /**
  * Implements hook_menu().
  */
@@ -269,6 +267,9 @@ function mailjet_simple_settings_defaults() {
     'public_key' => '',
     'private_key' => '',
     'lists' => [],
+    'additional_settings' => array(
+      'cancel_delete' => TRUE,
+    ),
   ];
 }
 
@@ -293,9 +294,11 @@ function mailjet_simple_user_cancel($edit, $account, $method) {
  *    User account object to perform unsubscribe routine on.
  */
 function mailjet_simple_unsubscribe_all_lists($account) {
-  // If $account exists and MAILJET_SIMPLE_UNSUBSCRIBE_ON_CANCEL_DELETE is true
-  // perform unsubscribe routine.
-  if (!empty($account) && MAILJET_SIMPLE_UNSUBSCRIBE_ON_CANCEL_DELETE) {
+  $settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
+
+  // If $account exists and $settings['additional_settings']['cancel_delete']
+  // is true perform unsubscribe routine.
+  if (!empty($account) && $settings['additional_settings']['cancel_delete']) {
     $api = mailjet_simple_get_api();
     $active_subscription_lists = mailjet_simple_get_list_ids_by_mail($account->mail);
     $lists = [];
