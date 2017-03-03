@@ -167,4 +167,17 @@ class MailJetSimple {
     }
     return [];
   }
+
+  /**
+   * Creates a Mailjet campaign.
+   *
+   * @return boolean
+   */
+  public function createCampaign($list_id, $message) {
+    $response = $this->api->post(Resources::$Campaigndraft, ['body' => $message]);
+    if ($response->success()) {
+      return $response->success();
+    }
+    return [];
+  }
 }
