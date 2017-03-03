@@ -43,8 +43,7 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
       '#title' => t('Select a Node Type'),
       '#options' => $content_types,
       '#default_value' => !empty($node_campaign_settings['node_campaign_content_types']) ? $node_campaign_settings['node_campaign_content_types'] : 0,
-      '#description' => t('Select the list that you would like to tie to your content type.
-        If you do not see any lists, please check your API settings and that the lists have been created at Mailjet.'),
+      '#description' => t('Select the content type that should create and send emails on save.'),
       '#states' => array(
         // Hide the node type form element when a list has not been selected.
         'invisible' => array(
