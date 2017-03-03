@@ -334,3 +334,29 @@ function mailjet_simple_unsubscribe_all_lists($account) {
     }
   }
 }
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param integer $list_id
+ *    List ID to associate with the campaign.
+ *
+ * @param array $message
+ *    Message to be sent.
+ *
+ * @param boolean $send
+ *    Triggers the email to be sent when TRUE is passed.
+ */
+function mailjet_simple_create_campaign($list_id, $message, $send = TRUE) {
+  if (!empty($list_id) && !empty($message)) {
+    $api = mailjet_simple_get_api();
+    $campaign = $api->createCampaign($list_id, $message);
+
+    // If $send is true send the campaign.
+    //
+    // TODO: create sendCampaign function.
+    if ($send) {
+      $api->sendCampaign();
+    }
+  }
+}
