@@ -46,7 +46,7 @@ function mailjet_simple_node_campaigns_settings_defaults() {
  */
 function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
   // Alter node form configured to be used as a node campaign.
-  if ($form['type']['#value'] == MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPES) {
+  if (($form['type']['#value'] == MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPES) && MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_ENABLED !== 0) {
 
     $form['mailjet_simple_node_campaigns_settings'] = array(
       '#type' => 'fieldset',
