@@ -76,14 +76,25 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
       '#default_value' => $default_value,
     );
 
+    $form['#validate'][] = 'mailjet_simple_node_campaigns_form_node_form_validate';
     $form['#submit'][] = 'mailjet_simple_node_campaigns_form_node_form_submit';
   }
 }
 
 /**
+ * Form validation handler.
+ */
+function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_state) {
+  if (empty($form_state['values']['body'][LANGUAGE_NONE][0]['value'])) {
+    form_set_error('body', 'The body field is required as it is used as the Mailjeft campaign body for this content.');
+  }
+}
+
+
+/**
  * Form submit handler.
  */
 function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
-  // Prepare Mailjet campaign.
+  // Prepare Mailjet campaign (ie: create and send).
   mailjet_simple_prepare_campaign(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
 }
