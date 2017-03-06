@@ -171,12 +171,51 @@ class MailJetSimple {
   /**
    * Creates a Mailjet campaign.
    *
+   * @return array
+   *    Campaign response.
+   */
+  public function createCampaign($list_id, $body) {
+    $response = $this->api->post(Resources::$Campaigndraft, ['body' => $body]);
+    if ($response->success()) {
+      return($response->getData());
+    }
+    else {
+      drupal_set_message(t('There was an error creating your campaign.'), 'error');
+    }
+
+    return [];
+  }
+
+  /**
+   * Posts campaign detail content (ie: message) to a Mailjet campaign.
+   *
    * @return boolean
    */
-  public function createCampaign($list_id, $message) {
-    $response = $this->api->post(Resources::$Campaigndraft, ['body' => $message]);
+  public function createCampaignContent($campaign_id, $body) {
+    $response = $this->api->post(Resources::$CampaigndraftDetailcontent, ['id' => $campaign_id, 'body' => $body]);
     if ($response->success()) {
-      return $response->success();
+      return $response->getData();
+    }
+    else {
+      drupal_set_message(t('There was an error setting your campaigns body text.'), 'error');
+    }
+    return [];
+  }
+
+  /**
+   * Sends a Mailjet campaign.
+   *
+   * @return boolean
+   */
+  public function sendCampaign($campaign_id) {
+    $response = $this->api->post(Resources::$CampaigndraftSend, ['id' => $campaign_id]);
+    if ($response->success()) {
+      drupal_set_message(t('You campaign was sent successfully!'), 'status');
+      return $response->getData();
+    }
+    else {
+      drupal_set_message(t('There was an error sending your campaign.  This is usually because the sending email address (ie: site_mail) does not match a valid sending address in your Mailjet account.'), 'error');
+      return $response->getData();
     }
     return [];
   }
