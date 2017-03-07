@@ -74,13 +74,10 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
       ),
     );
 
-    // Add form validation.
-    $form['#validate'][] = 'mailjet_simple_node_campaigns_admin_settings_form_validate';
   }
   else {
     drupal_set_message(t('You must configure a <a href="@url">Mailjet API Key</a> before managing this feature.', array('@url' => url('admin/config/services/mailjet-simple'))), 'error');
   }
-
 
   return system_settings_form($form);
 }
