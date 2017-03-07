@@ -59,7 +59,8 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
  * Form validation handler.
  */
 function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_state) {
-  if (empty($form_state['values']['body'][LANGUAGE_NONE][0]['value'])) {
+  // Set error message if node is to be sent as a campaign and the body field is empty.
+  if (!empty($form_state['values']['create_and_send']) && empty($form_state['values']['body'][LANGUAGE_NONE][0]['value'])) {
     form_set_error('body', 'The body field is required as it is used as the Mailjeft campaign body for this content.');
   }
 }
@@ -68,9 +69,12 @@ function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_sta
  * Form submit handler.
  */
 function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
-  // Load admin configured settings variables.
-  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+  // If node is marked to create and send a campaign prepare a campaign draft.
+  if (!empty($form_state['values']['create_and_send'])) {
+    // Load admin configured settings variables.
+    $settings = variable_get('mailjet_simple_node_campaigns_settings');
 
-  // Prepare Mailjet campaign (ie: create and send).
-  mailjet_simple_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
+    // Prepare Mailjet campaign (ie: create and send).
+    mailjet_simple_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
+  }
 }
