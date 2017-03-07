@@ -9,7 +9,7 @@
  */
 function mailjet_simple_node_campaigns_admin_settings_form($form) {
   $mailjet_simple_settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
-  $node_campaign_settings = variable_get('mailjet_simple_node_campaigns_settings', mailjet_simple_node_campaigns_settings_defaults());
+  $node_campaign_settings = variable_get('mailjet_simple_node_campaigns_settings');
 
   if (!empty($mailjet_simple_settings['public_key'])) {
     $form['mailjet_simple_node_campaigns_settings'] = array(

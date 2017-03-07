@@ -20,16 +20,6 @@ function mailjet_simple_node_campaigns_menu() {
 }
 
 /**
- * Defines default settings array.
- */
-function mailjet_simple_node_campaigns_settings_defaults() {
-  return [
-    'node_campaign_lists' => [],
-  ];
-}
-
-
-/**
  * Implements hook_form_BASE_FORM_ID_alter().
  */
 function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
