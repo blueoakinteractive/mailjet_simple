@@ -64,7 +64,6 @@ function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_sta
   }
 }
 
-
 /**
  * Form submit handler.
  */
