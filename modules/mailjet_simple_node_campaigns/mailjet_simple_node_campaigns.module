@@ -20,6 +20,24 @@ function mailjet_simple_node_campaigns_menu() {
 }
 
 /**
+ * Returns an options array of available templates.
+ *
+ * @return array
+ */
+function mailjet_simple_node_campaigns_template_options_list(){
+  $options = [];
+  $templates = mailjet_simple_get_templates();
+
+  if (!empty($templates)){
+    foreach ($templates as $template) {
+      $options[$template['ID']] = t($template['Name']);
+    }
+  }
+
+  return $options;
+}
+
+/**
  * Implements hook_form_BASE_FORM_ID_alter().
  */
 function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
@@ -75,6 +93,6 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
     $settings = variable_get('mailjet_simple_node_campaigns_settings');
 
     // Prepare Mailjet campaign (ie: create and send).
-    mailjet_simple_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
+    mailjet_simple_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'], $settings['node_campaign_template']);
   }
 }

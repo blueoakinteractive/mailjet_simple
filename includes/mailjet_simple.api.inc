@@ -211,7 +211,7 @@ class MailJetSimple {
    * https://dev.mailjet.com/email-api/v3/campaigndraft-detailcontent/
    *
    * @param integer $campaign_id
-   *  The campaign id updated with body text.
+   *    The campaign id updated with body text.
    *
    * @param array $arguments
    *    Properties used for updating the campaign.
@@ -245,7 +245,7 @@ class MailJetSimple {
    * https://dev.mailjet.com/email-api/v3/campaigndraft-send/
    *
    * @param integer $campaign_id
-   *  The ID associated with the campaign draft to be sent.
+   *    The ID associated with the campaign draft to be sent.
    *
    * @return array
    *    API response.
@@ -261,5 +261,39 @@ class MailJetSimple {
       return $response->getData();
     }
     return [];
+  }
+
+  /**
+   * Loads Mailjet template(s).
+   * https://dev.mailjet.com/email-api/v3/template/
+   *
+   * @param integer $template_id
+   *    The id of the template to be loaded.
+   *    If no template id is provided load all user templates.
+   *
+   * @param array $filter_arguments
+   *    Properties used for filtering templates.
+   *
+   * @return array
+   *    API response.
+   */
+  public function getTemplates($template_id = NULL, $filter_arguments = []) {
+    // Load templates with the owner type of user.
+    $filters = [
+      'OwnerType' => 'user'
+    ];
+
+    // Overriding existing filters and adding new ones.
+    $properties = array_merge($filters, $filter_arguments);
+
+    // If the template id is provided load the template else load all user templates.
+    if (!empty($template_id)) {
+      $response = $this->api->get(Resources::$Template, ['id' => $template_id], ['filters' => $filters]);
+    }
+    else {
+      $response = $this->api->get(Resources::$Template, ['filters' => $filters]);
+    }
+
+    return $response->getData();
   }
 }
