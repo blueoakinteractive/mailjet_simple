@@ -1,17 +1,5 @@
 <?php
 
-// Define constants for module variables
-//
-// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_ENABLED
-// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LIST
-// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPE
-
-$module_variables = variable_get('mailjet_simple_node_campaigns_settings', array());
-
-foreach($module_variables as $key => $value) {
-  define('MAILJET_SIMPLE_NODE_CAMPAIGNS_' . strtoupper($key), $value);
-}
-
 /**
  * Implements hook_menu().
  */
@@ -45,8 +33,11 @@ function mailjet_simple_node_campaigns_settings_defaults() {
  * Implements hook_form_BASE_FORM_ID_alter().
  */
 function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
+  // Load admin configured settings variables.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
   // Alter node form configured to be used as a node campaign.
-  if (($form['type']['#value'] == MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPE) && MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_ENABLED !== 0) {
+  if (($form['type']['#value'] == $settings['node_campaign_content_type']) && $settings['node_campaign_enabled'] !== 0) {
 
     $form['mailjet_simple_node_campaigns_settings'] = array(
       '#type' => 'fieldset',
@@ -95,6 +86,9 @@ function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_sta
  * Form submit handler.
  */
 function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
+  // Load admin configured settings variables.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
   // Prepare Mailjet campaign (ie: create and send).
-  mailjet_simple_prepare_campaign_draft(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LIST, $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
+  mailjet_simple_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
 }
