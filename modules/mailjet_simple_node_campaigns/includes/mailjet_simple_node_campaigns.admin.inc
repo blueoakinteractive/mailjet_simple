@@ -11,14 +11,14 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
   $mailjet_simple_settings = variable_get('mailjet_simple_settings', mailjet_simple_settings_defaults());
   $node_campaign_settings = variable_get('mailjet_simple_node_campaigns_settings', mailjet_simple_node_campaigns_settings_defaults());
 
-  $form['mailjet_simple_node_campaigns_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Mailjet Simple Node Campaign Settings'),
-    '#description' => t('Node Campaigns allow nodes to be converted into Mailjet campaigns and be sent to all subscribers of the associated Mailjet List.'),
-    '#tree' => TRUE,
-  );
-
   if (!empty($mailjet_simple_settings['public_key'])) {
+    $form['mailjet_simple_node_campaigns_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Mailjet Simple Node Campaign Settings'),
+      '#description' => t('Node Campaigns allow nodes to be converted into Mailjet campaigns and be sent to all subscribers of the associated Mailjet List.'),
+      '#tree' => TRUE,
+    );
+
     $form['mailjet_simple_node_campaigns_settings']['node_campaign_enabled'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enable Node Campaigns?'),
@@ -74,9 +74,13 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
       ),
     );
 
+    // Add form validation.
+    $form['#validate'][] = 'mailjet_simple_node_campaigns_admin_settings_form_validate';
+  }
+  else {
+    drupal_set_message(t('You must configure a <a href="@url">Mailjet API Key</a> before managing this feature.', array('@url' => url('admin/config/services/mailjet-simple'))), 'error');
   }
 
-  $form['#validate'][] = 'mailjet_simple_node_campaigns_admin_settings_form_validate';
 
   return system_settings_form($form);
 }
