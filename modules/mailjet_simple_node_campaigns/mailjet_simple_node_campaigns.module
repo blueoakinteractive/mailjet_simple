@@ -3,8 +3,8 @@
 // Define constants for module variables
 //
 // MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_ENABLED
-// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS
-// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPES
+// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LIST
+// MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPE
 
 $module_variables = variable_get('mailjet_simple_node_campaigns_settings', array());
 
@@ -46,7 +46,7 @@ function mailjet_simple_node_campaigns_settings_defaults() {
  */
 function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
   // Alter node form configured to be used as a node campaign.
-  if (($form['type']['#value'] == MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPES) && MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_ENABLED !== 0) {
+  if (($form['type']['#value'] == MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_CONTENT_TYPE) && MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_ENABLED !== 0) {
 
     $form['mailjet_simple_node_campaigns_settings'] = array(
       '#type' => 'fieldset',
@@ -96,5 +96,5 @@ function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_sta
  */
 function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
   // Prepare Mailjet campaign (ie: create and send).
-  mailjet_simple_prepare_campaign_draft(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
+  mailjet_simple_prepare_campaign_draft(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LIST, $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
 }

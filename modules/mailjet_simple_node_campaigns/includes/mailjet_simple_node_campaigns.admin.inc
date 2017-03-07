@@ -28,11 +28,11 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
 
     $lists = array(0 => t('- Disabled -')) + mailjet_simple_options_list(TRUE);
 
-    $form['mailjet_simple_node_campaigns_settings']['node_campaign_lists'] = array(
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_list'] = array(
       '#type' => 'select',
       '#title' => t('Select a List'),
       '#options' => $lists,
-      '#default_value' => !empty($node_campaign_settings['node_campaign_lists']) ? $node_campaign_settings['node_campaign_lists'] : 0,
+      '#default_value' => !empty($node_campaign_settings['node_campaign_list']) ? $node_campaign_settings['node_campaign_list'] : 0,
       '#description' => t('Select the list that you would like to tie to your content type.
         If you do not see any lists, please check your API settings and that the lists have been created at Mailjet.'),
       '#states' => array(
@@ -56,11 +56,11 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
 
     $content_types = array(0 => t('- None -')) + $content_types;
 
-    $form['mailjet_simple_node_campaigns_settings']['node_campaign_content_types'] = array(
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_content_type'] = array(
       '#type' => 'select',
       '#title' => t('Select a Node Type'),
       '#options' => $content_types,
-      '#default_value' => !empty($node_campaign_settings['node_campaign_content_types']) ? $node_campaign_settings['node_campaign_content_types'] : 0,
+      '#default_value' => !empty($node_campaign_settings['node_campaign_content_type']) ? $node_campaign_settings['node_campaign_content_type'] : 0,
       '#description' => t('Select the content type that should create and send emails on save.'),
       '#states' => array(
         // Hide the field when node_campaign_enabled has not been checked.
@@ -93,11 +93,11 @@ function mailjet_simple_node_campaigns_admin_settings_form_validate($form, &$for
     return;
   }
   else {
-    if (empty($form_state['values']['mailjet_simple_node_campaigns_settings']['node_campaign_lists'])) {
-      form_set_error('mailjet_simple_node_campaigns_settings][node_campaign_lists', t('A Mailjet list must be selected to enable this feature.'));
+    if (empty($form_state['values']['mailjet_simple_node_campaigns_settings']['node_campaign_list'])) {
+      form_set_error('mailjet_simple_node_campaigns_settings][node_campaign_list', t('A Mailjet list must be selected to enable this feature.'));
     }
-    if (empty($form_state['values']['mailjet_simple_node_campaigns_settings']['node_campaign_content_types'])) {
-      form_set_error('mailjet_simple_node_campaigns_settings][node_campaign_content_types', t('A node type must be selected to enable this feature.'));
+    if (empty($form_state['values']['mailjet_simple_node_campaigns_settings']['node_campaign_content_type'])) {
+      form_set_error('mailjet_simple_node_campaigns_settings][node_campaign_content_type', t('A node type must be selected to enable this feature.'));
     }
   }
 }
