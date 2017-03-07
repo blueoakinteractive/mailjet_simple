@@ -45,16 +45,9 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
       '#weight' => 89,
     );
 
-    // Send campaign on save default value based on node create or node edit.
-    $default_value = 0;
-    if (empty($form['nid']['#value'])) {
-      $default_value = 1;
-    }
-
     $form['mailjet_simple_node_campaigns_settings']['create_and_send'] = array(
       '#type' => 'checkbox',
       '#title' => t('Create and Send Campaign on Save?'),
-      '#default_value' => $default_value,
     );
 
     $form['#validate'][] = 'mailjet_simple_node_campaigns_form_node_form_validate';
