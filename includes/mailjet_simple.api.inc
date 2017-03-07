@@ -169,13 +169,32 @@ class MailJetSimple {
   }
 
   /**
-   * Creates a Mailjet campaign.
+   * Creates a Mailjet campaign draft.
+   * https://dev.mailjet.com/guides/?php#prepare-a-campaign
+   * https://dev.mailjet.com/email-api/v3/campaigndraft/
+   *
+   * @param array $arguments
+   *    Properties used for creating the campaign.
    *
    * @return array
-   *    Campaign response.
+   *    API response.
    */
-  public function createCampaign($list_id, $body) {
-    $response = $this->api->post(Resources::$Campaigndraft, ['body' => $body]);
+  public function createCampaignDraft($arguments) {
+    // Default properties required for creating a campaign draft.
+    $properties = array(
+      'Locale' => "en_US",
+      'Sender' => variable_get('site_name', 'Example Site Name'),
+      'SenderName' => variable_get('site_name', 'Example Site Name'),
+      'SenderEmail' => variable_get('site_mail', 'example@example.com'),
+      'Subject' => NULL,
+      'ContactsListID' => NULL,
+      'Title' => NULL,
+    );
+
+    // Overriding existing properties and adding new ones.
+    $properties = array_merge($properties, $arguments);
+
+    $response = $this->api->post(Resources::$Campaigndraft, ['body' => $properties]);
     if ($response->success()) {
       return($response->getData());
     }
@@ -188,11 +207,29 @@ class MailJetSimple {
 
   /**
    * Posts campaign detail content (ie: message) to a Mailjet campaign.
+   * https://dev.mailjet.com/guides/?php#prepare-a-campaign
+   * https://dev.mailjet.com/email-api/v3/campaigndraft-detailcontent/
    *
-   * @return boolean
+   * @param integer $campaign_id
+   *  The campaign id updated with body text.
+   *
+   * @param array $arguments
+   *    Properties used for updating the campaign.
+   *
+   * @return array
+   *    API response.
    */
-  public function createCampaignContent($campaign_id, $body) {
-    $response = $this->api->post(Resources::$CampaigndraftDetailcontent, ['id' => $campaign_id, 'body' => $body]);
+  public function createCampaignDraftDetailContent($campaign_id, $arguments) {
+    // Default properties required for creating a campaign draft detail content.
+    $properties = array(
+      'Html-part' => NULL,
+      'Text-part' => NULL
+    );
+
+    // Overriding existing properties and adding new ones.
+    $properties = array_merge($properties, $arguments);
+
+    $response = $this->api->post(Resources::$CampaigndraftDetailcontent, ['id' => $campaign_id, 'body' => $arguments]);
     if ($response->success()) {
       return $response->getData();
     }
@@ -203,11 +240,17 @@ class MailJetSimple {
   }
 
   /**
-   * Sends a Mailjet campaign.
+   * Sends a Mailjet campaign draft.
+   * https://dev.mailjet.com/guides/?php#send-a-campaign
+   * https://dev.mailjet.com/email-api/v3/campaigndraft-send/
    *
-   * @return boolean
+   * @param integer $campaign_id
+   *  The ID associated with the campaign draft to be sent.
+   *
+   * @return array
+   *    API response.
    */
-  public function sendCampaign($campaign_id) {
+  public function sendCampaignDraft($campaign_id) {
     $response = $this->api->post(Resources::$CampaigndraftSend, ['id' => $campaign_id]);
     if ($response->success()) {
       drupal_set_message(t('You campaign was sent successfully!'), 'status');

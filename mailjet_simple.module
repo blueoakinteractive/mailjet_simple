@@ -338,19 +338,16 @@ function mailjet_simple_unsubscribe_all_lists($account) {
 /**
  * Helper function to create a new campaign for a Mailjet list.
  *
- * @param integer $list_id
- *    List ID to associate with the campaign.
- *
- * @param array $body
- *    Message to used for campaign creation.
+ * @param array $arguments
+ *    Message arguments used for campaign creation.
  *
  * @return array $result
  *    Returns Mailjet API call result.
  */
-function mailjet_simple_create_campaign($list_id, $body) {
-  if (!empty($list_id) && !empty($body)) {
+function mailjet_simple_create_campaign_draft($arguments) {
+  if (!empty($arguments)) {
     $api = mailjet_simple_get_api();
-    $result = $api->createCampaign($list_id, $body);
+    $result = $api->createCampaignDraft($arguments);
     return $result;
   }
 }
@@ -358,19 +355,19 @@ function mailjet_simple_create_campaign($list_id, $body) {
 /**
  * Helper function to create a new campaign for a Mailjet list.
  *
- * @param array $campaign_id
+ * @param integer $campaign_id
  *    Campaign ID we will be adding copy to.
  *
- * @param array $body
+ * @param array $arguments
  *    Message to used for campaign creation.
  *
  * @return string $result
  *    Returns Mailjet API call result.
  */
-function mailjet_simple_create_campaign_content($campaign_id, $body) {
-  if (!empty($campaign_id) && !empty($body)) {
+function mailjet_simple_create_campaign_draft_detail_content($campaign_id, $arguments) {
+  if (!empty($campaign_id) && !empty($arguments)) {
     $api = mailjet_simple_get_api();
-    $result = $api->createCampaignContent($campaign_id, $body);
+    $result = $api->createCampaignDraftDetailContent($campaign_id, $arguments);
     return $result;
   }
 }
@@ -384,10 +381,10 @@ function mailjet_simple_create_campaign_content($campaign_id, $body) {
  * @return string $result
  *    Returns Mailjet API call result.
  */
-function mailjet_simple_send_campaign($campaign_id) {
+function mailjet_simple_send_campaign_draft($campaign_id) {
   if (!empty($campaign_id)) {
     $api = mailjet_simple_get_api();
-    $result = $api->sendCampaign($campaign_id);
+    $result = $api->sendCampaignDraft($campaign_id);
     return $result;
   }
 }
@@ -404,88 +401,30 @@ function mailjet_simple_send_campaign($campaign_id) {
  * @param string $message
  *    Content to be posted as message on associated campaign.
  */
-function mailjet_simple_prepare_campaign($list_id, $title, $message) {
-
+function mailjet_simple_prepare_campaign_draft($list_id, $title, $message) {
   // Create Mailjet campaign.
-  $body = mailjet_simple_scaffold_body(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $title, NULL, $body_type = 'createCampaign');
-  $campaign = mailjet_simple_create_campaign(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $body);
+  $arguments_create_campaign = array(
+    'Subject' => "$title",
+    'ContactsListID' => "$list_id",
+    'Title' => "$title",
+  );
+
+  $campaign = mailjet_simple_create_campaign_draft($arguments_create_campaign);
 
   // Perform additional actions if campaign was created successfully.
   if (!empty($campaign[0]['ID'])) {
     $campaign_id = $campaign[0]['ID'];
 
     // Create Mailjet campaign content.
-    $body = mailjet_simple_scaffold_body(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $title, $content = $message, $body_type = 'createCampaignContent');
-    $campaign_content = mailjet_simple_create_campaign_content($campaign_id, $body);
+    $arguments_create_campaign_content = array(
+      'Html-part' => check_markup($message),
+      'Text-part' => check_plain($message)
+    );
 
-    // Send Mailjet campaign;
-    $campaign_send = mailjet_simple_send_campaign($campaign_id);
+    $campaign_content = mailjet_simple_create_campaign_draft_detail_content($campaign_id, $arguments_create_campaign_content);
+
+    // Send Mailjet campaign.
+    $campaign_send = mailjet_simple_send_campaign_draft($campaign_id);
   }
 
-}
-
-/**
- * Helper function to the body for a Mailjet campaign.
- *
- * @param integer $list_id
- *    List ID to associate with the campaign.
- *
- * @param string $title
- *    Message title and subject.
- *
- * @param string $sender_name
- *    Message senders name. Defaults to site_name.
- *
- * @param string $sender_email
- *    Message senders email address. Defaults to site_mail.
- *
- * @param string $locale
- *    The message $locale. Defaults to en_US.
- *
- * @return array $body
- *    Returns the prepared body.
- */
-function mailjet_simple_scaffold_body($list_id, $title, $content = NULL, $body_type = NULL, $sender_name = NULL, $sender_email = NULL, $locale = 'en_US') {
-  // Default to site_name.
-  if (empty($sender_name)) {
-    $sender_name = variable_get('site_name', 'Example Site Name');
-  }
-
-  // Default to site_mail.
-  if (empty($sender_email)) {
-    $sender_email = variable_get('site_mail', 'example@example.com');
-  }
-
-  // Sanitize body content and create html / plain text variants.
-  if (!empty($content)) {
-    $content_html = check_markup($content);
-    $content_plain = check_plain($content);
-  }
-
-  $body = [];
-
-  // Build body depending on body_type.
-  switch ($body_type) {
-    case 'createCampaign':
-      $body = [
-        'Locale' => "$locale",
-        'Sender' => "$sender_name",
-        'SenderName' => "$sender_name",
-        'SenderEmail' => "$sender_email",
-        'Subject' => "$title",
-        'ContactsListID' => "$list_id",
-        'Title' => "$title",
-      ];
-      break;
-    case 'createCampaignContent':
-      $body = [
-        'Html-part' => $content_html,
-        'Text-part' => $content_plain
-      ];
-      break;
-    default:
-      $body = [];
-  }
-
-  return($body);
 }

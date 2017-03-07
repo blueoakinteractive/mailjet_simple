@@ -96,5 +96,5 @@ function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_sta
  */
 function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
   // Prepare Mailjet campaign (ie: create and send).
-  mailjet_simple_prepare_campaign(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
+  mailjet_simple_prepare_campaign_draft(MAILJET_SIMPLE_NODE_CAMPAIGNS_NODE_CAMPAIGN_LISTS, $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value']);
 }
