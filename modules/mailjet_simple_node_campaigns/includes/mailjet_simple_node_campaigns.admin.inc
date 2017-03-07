@@ -22,7 +22,7 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
     $form['mailjet_simple_node_campaigns_settings']['node_campaign_enabled'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enable Node Campaigns?'),
-      '#default_value' => !empty($node_campaign_settings['node_campaign_enabled']) ? $node_campaign_settings['node_campaign_enabled'] : 0,
+      '#default_value' => !empty($node_campaign_settings['node_campaign_enabled']),
       '#description' => t('Enable this feature if you would like to enable the node campaigns feature for a content type.'),
     );
 
