@@ -20,6 +20,12 @@ function mailjet_simple_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/config/services/mailjet-simple/settings'] = array(
+    'title' => 'Mailjet Simple Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10
+  );
+
   return $items;
 }
 
@@ -327,4 +333,118 @@ function mailjet_simple_unsubscribe_all_lists($account) {
       }
     }
   }
+}
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param array $arguments
+ *    Message arguments used for campaign creation.
+ *
+ * @return array $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_create_campaign_draft($arguments) {
+  if (!empty($arguments)) {
+    $api = mailjet_simple_get_api();
+    $result = $api->createCampaignDraft($arguments);
+    return $result;
+  }
+}
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param integer $campaign_id
+ *    Campaign ID we will be adding copy to.
+ *
+ * @param array $arguments
+ *    Message to used for campaign creation.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_create_campaign_draft_detail_content($campaign_id, $arguments) {
+  if (!empty($campaign_id) && !empty($arguments)) {
+    $api = mailjet_simple_get_api();
+    $result = $api->createCampaignDraftDetailContent($campaign_id, $arguments);
+    return $result;
+  }
+}
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param integer $campaign_id
+ *    Campaign ID we will be adding copy to.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_send_campaign_draft($campaign_id) {
+  if (!empty($campaign_id)) {
+    $api = mailjet_simple_get_api();
+    $result = $api->sendCampaignDraft($campaign_id);
+    return $result;
+  }
+}
+
+/**
+ * Helper function to load templates.
+ *
+ * @param integer $template_id
+ *    The id of the template to be loaded.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_get_templates($template_id = NULL) {
+  $api = mailjet_simple_get_api();
+  $result = $api->getTemplates($template_id);
+  return $result;
+}
+
+/**
+ * Helper function to prepare a new campaign for a Mailjet list.
+ *
+ * @param integer $list_id
+ *    List ID to associate with the campaign.
+ *
+ * @param string $title
+ *    Title to associate with the campaign.
+ *
+ * @param string $message
+ *    Content to be posted as message on associated campaign.
+ */
+function mailjet_simple_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL) {
+  // Create Mailjet campaign.
+  $arguments_create_campaign = array(
+    'Subject' => "$title",
+    'ContactsListID' => "$list_id",
+    'Title' => "$title",
+  );
+
+  // TODO: finalize adding template selection to campaign on creation.
+  //
+  // If template id is set add to campaign creation arguments.
+  if (!empty($template_id)) {}
+
+  $campaign = mailjet_simple_create_campaign_draft($arguments_create_campaign);
+
+  // Perform additional actions if campaign was created successfully.
+  if (!empty($campaign[0]['ID'])) {
+    $campaign_id = $campaign[0]['ID'];
+
+    // Create Mailjet campaign content.
+    $arguments_create_campaign_content = array(
+      'Html-part' => check_markup($message),
+      'Text-part' => check_plain($message)
+    );
+
+    $campaign_content = mailjet_simple_create_campaign_draft_detail_content($campaign_id, $arguments_create_campaign_content);
+
+    // Send Mailjet campaign.
+    $campaign_send = mailjet_simple_send_campaign_draft($campaign_id);
+  }
+
 }

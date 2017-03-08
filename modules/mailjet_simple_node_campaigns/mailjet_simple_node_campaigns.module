@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function mailjet_simple_node_campaigns_menu() {
+  $items = [];
+
+  $items['admin/config/services/mailjet-simple/node-campaigns'] = array(
+    'title' => 'Node Campaign Settings',
+    'description' => t('Configure Mailjet Simple Node Campaigns Module Settings.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailjet_simple_node_campaigns_admin_settings_form'),
+    'access arguments' => array('administer mailjet simple'),
+    'file' => 'includes/mailjet_simple_node_campaigns.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Returns an options array of available templates.
+ *
+ * @return array
+ */
+function mailjet_simple_node_campaigns_template_options_list(){
+  $options = [];
+  $templates = mailjet_simple_get_templates();
+
+  if (!empty($templates)){
+    foreach ($templates as $template) {
+      $options[$template['ID']] = t($template['Name']);
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
+  // Load admin configured settings variables.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+  // Alter node form configured to be used as a node campaign.
+  if (($form['type']['#value'] == $settings['node_campaign_content_type']) && $settings['node_campaign_enabled'] !== 0) {
+
+    $form['mailjet_simple_node_campaigns_settings'] = array(
+      '#type' => 'fieldset',
+      '#access' => TRUE,
+      '#title' => t('Mailjet: Node Campaign Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#group' => 'additional_settings',
+      '#attributes' => array(
+        'class' => array('mailjet-simple-node-campaigns-settings'),
+      ),
+      '#attached' => array(
+        'js' => array(drupal_get_path('module', 'mailjet_simple_node_campaigns') . '/mailjet-simple-node-campaigns-node-form.js')
+      ),
+      '#weight' => 89,
+    );
+
+    $form['mailjet_simple_node_campaigns_settings']['create_and_send'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create and Send Campaign on Save?'),
+    );
+
+    $form['#validate'][] = 'mailjet_simple_node_campaigns_form_node_form_validate';
+    $form['#submit'][] = 'mailjet_simple_node_campaigns_form_node_form_submit';
+  }
+}
+
+/**
+ * Form validation handler.
+ */
+function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_state) {
+  // Set error message if node is to be sent as a campaign and the body field is empty.
+  if (!empty($form_state['values']['create_and_send']) && empty($form_state['values']['body'][LANGUAGE_NONE][0]['value'])) {
+    form_set_error('body', 'The body field is required as it is used as the Mailjeft campaign body for this content.');
+  }
+}
+
+/**
+ * Form submit handler.
+ */
+function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
+  // If node is marked to create and send a campaign prepare a campaign draft.
+  if (!empty($form_state['values']['create_and_send'])) {
+    // Load admin configured settings variables.
+    $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+    // Prepare Mailjet campaign (ie: create and send).
+    mailjet_simple_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'], $settings['node_campaign_template']);
+  }
+}
