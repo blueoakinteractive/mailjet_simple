@@ -1,0 +1,7 @@
+name = MailJet Simple Node Campaigns
+description = Provides features to tie content types to mailjet lists and create campaigns / send emails upon node creation.
+core = 7.x
+
+dependencies[] = mailjet_simple
+
+files[] = includes/mailjet_simple_node_campaigns.api.inc

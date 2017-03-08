@@ -7,7 +7,7 @@
 use \Mailjet\Resources;
 
 class MailJetSimple {
-  private $api;
+  protected $api;
 
   /**
    * Constructor method to bootstrap the MailJet API.

@@ -1,0 +1,269 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function mailjet_simple_node_campaigns_menu() {
+  $items = [];
+
+  $items['admin/config/services/mailjet-simple/node-campaigns'] = array(
+    'title' => 'Node Campaign Settings',
+    'description' => t('Configure Mailjet Simple Node Campaigns Module Settings.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailjet_simple_node_campaigns_admin_settings_form'),
+    'access arguments' => array('administer mailjet simple'),
+    'file' => 'includes/mailjet_simple_node_campaigns.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Returns an options array of available templates.
+ *
+ * @return array
+ */
+function mailjet_simple_node_campaigns_template_options_list(){
+  $options = [];
+  $templates = mailjet_simple_node_campaigns_get_templates();
+
+  if (!empty($templates)){
+    foreach ($templates as $template) {
+      $options[$template['ID']] = t($template['Name']);
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state) {
+  // Load admin configured settings variables.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+  // Alter node form configured to be used as a node campaign.
+  if (!empty($settings['node_campaign_enabled']) && ($form['type']['#value'] == $settings['node_campaign_content_type'])) {
+
+    $form['mailjet_simple_node_campaigns_settings'] = array(
+      '#type' => 'fieldset',
+      '#access' => TRUE,
+      '#title' => t('Mailjet: Node Campaign Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#group' => 'additional_settings',
+      '#attributes' => array(
+        'class' => array('mailjet-simple-node-campaigns-settings'),
+      ),
+      '#attached' => array(
+        'js' => array(drupal_get_path('module', 'mailjet_simple_node_campaigns') . '/mailjet-simple-node-campaigns-node-form.js')
+      ),
+      '#weight' => 89,
+    );
+
+    $form['mailjet_simple_node_campaigns_settings']['create_and_send'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create and Send Campaign on Save?'),
+    );
+
+    $form['#validate'][] = 'mailjet_simple_node_campaigns_form_node_form_validate';
+    $form['#submit'][] = 'mailjet_simple_node_campaigns_form_node_form_submit';
+  }
+}
+
+/**
+ * Form validation handler.
+ */
+function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_state) {
+  // Set error message if node is to be sent as a campaign and the body field is empty.
+  if (!empty($form_state['values']['create_and_send']) && empty($form_state['values']['body'][LANGUAGE_NONE][0]['value'])) {
+    form_set_error('body', 'The body field is required as it is used as the Mailjeft campaign body for this content.');
+  }
+}
+
+/**
+ * Form submit handler.
+ */
+function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
+  // If node is marked to create and send a campaign prepare a campaign draft.
+  if (!empty($form_state['values']['create_and_send'])) {
+    // Load admin configured settings variables.
+    $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+    // Prepare Mailjet campaign (ie: create and send).
+    mailjet_simple_node_campaigns_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'], $settings['node_campaign_template']);
+  }
+}
+
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param array $arguments
+ *    Message arguments used for campaign creation.
+ *
+ * @return array $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_node_campaigns_create_campaign_draft($arguments) {
+  if (!empty($arguments)) {
+    $api = mailjet_simple_node_campaigns_get_api();
+    $result = $api->createCampaignDraft($arguments);
+    return $result;
+  }
+}
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param integer $campaign_id
+ *    Campaign ID we will be adding copy to.
+ *
+ * @param array $arguments
+ *    Message to used for campaign creation.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_node_campaigns_create_campaign_draft_detail_content($campaign_id, $arguments) {
+  if (!empty($campaign_id) && !empty($arguments)) {
+    $api = mailjet_simple_node_campaigns_get_api();
+    $result = $api->createCampaignDraftDetailContent($campaign_id, $arguments);
+    return $result;
+  }
+}
+
+/**
+ * Helper function to create a new campaign for a Mailjet list.
+ *
+ * @param integer $campaign_id
+ *    Campaign ID we will be adding copy to.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_node_campaigns_send_campaign_draft($campaign_id) {
+  if (!empty($campaign_id)) {
+    $api = mailjet_simple_node_campaigns_get_api();
+    $result = $api->sendCampaignDraft($campaign_id);
+    return $result;
+  }
+}
+
+/**
+ * Helper function to load templates.
+ *
+ * @param integer $template_id
+ *    The id of the template to be loaded.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_node_campaigns_get_templates($template_id = NULL) {
+  $api = mailjet_simple_node_campaigns_get_api();
+  $result = $api->getTemplates($template_id);
+  return $result;
+}
+
+/**
+ * Helper function to load template detail.
+ *
+ * @param integer $template_id
+ *    The id of the template to be loaded.
+ *
+ * @return string $result
+ *    Returns Mailjet API call result.
+ */
+function mailjet_simple_node_campaigns_get_template_detail($template_id) {
+  $api = mailjet_simple_node_campaigns_get_api();
+  $result = $api->getTemplateDetail($template_id);
+  return $result;
+}
+
+/**
+ * Helper function to prepare a new campaign for a Mailjet list.
+ *
+ * @param integer $list_id
+ *    List ID to associate with the campaign.
+ *
+ * @param string $title
+ *    Title to associate with the campaign.
+ *
+ * @param string $message
+ *    Content to be posted as message on associated campaign.
+ */
+function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL) {
+  // Create Mailjet campaign.
+  $arguments_create_campaign = array(
+    'Subject' => "$title",
+    'ContactsListID' => "$list_id",
+    'Title' => "$title",
+  );
+
+  $campaign = mailjet_simple_node_campaigns_create_campaign_draft($arguments_create_campaign);
+
+  // Perform additional actions if campaign was created successfully.
+  if (!empty($campaign[0]['ID'])) {
+    $campaign_id = $campaign[0]['ID'];
+
+    // If a template id was specified, loop over the template
+    // variables and do a string replacement on against the
+    // template markup and plain text.
+    if (!empty($template_id)) {
+
+      // Define the base template replacement array.
+      $mailjet_template_vars = [
+        '{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_BODY }}' => $message,
+      ];
+
+      // Build a context array to pass to the alter method.
+      $context = [
+        'list_id' => $list_id,
+        'title' => $title,
+        'message' => $message,
+        'template_id' => $template_id,
+      ];
+
+      // Allow other modules to alter the template vars for replacement.
+      drupal_alter('mailjet_simple_node_campaigns_campaign_template_vars', $mailjet_template_vars, $context);
+
+      // Fetch the template detail.
+      $detail = mailjet_simple_node_campaigns_get_template_detail($template_id);
+
+      // Loop over each template variable and perform a string replace.
+      if (!empty($detail[0]) && !empty($mailjet_template_vars)) {
+        foreach ($mailjet_template_vars as $key => $val) {
+          $html_message = str_replace($key, check_markup($val), $detail[0]['Html-part']);
+          $text_message = str_replace($key, check_plain($val), $detail[0]['Text-part']);
+        }
+      }
+    }
+
+    // Create Mailjet campaign content.
+    $arguments_create_campaign_content = array(
+      'Html-part' => !empty($html_message) ? $html_message : check_markup($message),
+      'Text-part' => !empty($text_message) ? $text_message : check_plain($message),
+    );
+
+    // Create the draft and send the campaign.
+    mailjet_simple_node_campaigns_create_campaign_draft_detail_content($campaign_id, $arguments_create_campaign_content);
+    mailjet_simple_node_campaigns_send_campaign_draft($campaign_id);
+  }
+}
+
+/**
+ * Bootstraps the MailJet API.
+ *
+ * @return \MailJetSimple
+ */
+function mailjet_simple_node_campaigns_get_api() {
+  $settings = variable_get('mailjet_simple_settings');
+  try {
+    return new MailJetSimpleNodeCampaigns($settings['public_key'], $settings['private_key']);
+  } catch (Exception $ex) {
+    watchdog('mailjet_simple_node_campaigns', t('Unable to bootstrap MailJet API'));
+    return NULL;
+  }
+}
