@@ -20,6 +20,12 @@ function mailjet_simple_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/config/services/mailjet-simple/settings'] = array(
+    'title' => 'Mailjet Simple Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10
+  );
+
   return $items;
 }
 
