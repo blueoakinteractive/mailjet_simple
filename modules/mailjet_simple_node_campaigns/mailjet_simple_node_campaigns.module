@@ -68,6 +68,33 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
       '#title' => t('Create and Send Campaign on Save?'),
     );
 
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Override Node Campaign Setting Defaults'),
+      '#description' => t('Update the field data below to override the Node Campaign Setting Defaults for this node campaign.'),
+      '#tree' => TRUE,
+    );
+
+    $lists = array(0 => t('- Disabled -')) + mailjet_simple_options_list();
+
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_list'] = array(
+      '#type' => 'select',
+      '#title' => t('Select a List'),
+      '#options' => $lists,
+      '#default_value' => !empty($settings['node_campaign_list']) ? $settings['node_campaign_list'] : 0,
+      '#description' => t('Select the list that you would like to tie to this node campaign.'),
+    );
+
+    $templates = array(0 => t('- None -')) + mailjet_simple_node_campaigns_template_options_list();
+
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_template'] = array(
+      '#type' => 'select',
+      '#title' => t('Select a Template'),
+      '#options' => $templates,
+      '#default_value' => !empty($settings['node_campaign_template']) ? $settings['node_campaign_template'] : 0,
+      '#description' => t('Select a template that will be associated with this node campaign if you would like your email styled.'),
+    );
+
     $form['#validate'][] = 'mailjet_simple_node_campaigns_form_node_form_validate';
     $form['#submit'][] = 'mailjet_simple_node_campaigns_form_node_form_submit';
   }
@@ -89,11 +116,8 @@ function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_sta
 function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state) {
   // If node is marked to create and send a campaign prepare a campaign draft.
   if (!empty($form_state['values']['create_and_send'])) {
-    // Load admin configured settings variables.
-    $settings = variable_get('mailjet_simple_node_campaigns_settings');
-
     // Prepare Mailjet campaign (ie: create and send).
-    mailjet_simple_node_campaigns_prepare_campaign_draft($settings['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'], $settings['node_campaign_template']);
+    mailjet_simple_node_campaigns_prepare_campaign_draft($form_state['values']['node_campaign_settings_overrides']['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'], $form_state['values']['node_campaign_settings_overrides']['node_campaign_template']);
   }
 }
 
