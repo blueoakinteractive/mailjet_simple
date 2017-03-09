@@ -25,6 +25,9 @@ function mailjet_simple_node_campaigns_menu() {
  * @return array
  */
 function mailjet_simple_node_campaigns_template_options_list(){
+  // TODO: need to cache template list to reduce API requests.
+  // This will currently only be useful on node save however
+  // we may have more instances where this would be useful.
   $options = [];
   $templates = mailjet_simple_node_campaigns_get_templates();
 
