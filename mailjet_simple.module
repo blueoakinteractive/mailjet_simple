@@ -204,7 +204,7 @@ function mailjet_simple_user_register_form_submit($form, &$form_state) {
       }
 
       $contact = $api->updateContact($unsubscribe_values, $unsubscribe_lists);
-      drupal_set_message(t('Your Mailjet email address has been updated to @email', array('@email' => $new_mail)));
+      drupal_set_message(t('Your email address has been updated to @email', array('@email' => $new_mail)));
     }
 
   }
