@@ -242,6 +242,7 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
 
       // Define the base template replacement array.
       $mailjet_template_vars = [
+        '{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_TITLE }}' => $title,
         '{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_BODY }}' => $message,
       ];
 
@@ -261,9 +262,11 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
 
       // Loop over each template variable and perform a string replace.
       if (!empty($detail[0]) && !empty($mailjet_template_vars)) {
+        $html_message = $detail[0]['Html-part'];
+        $text_message = $detail[0]['Text-part'];
         foreach ($mailjet_template_vars as $key => $val) {
-          $html_message = str_replace($key, check_markup($val), $detail[0]['Html-part']);
-          $text_message = str_replace($key, check_plain($val), $detail[0]['Text-part']);
+          $html_message = str_replace($key, check_markup($val), $html_message);
+          $text_message = str_replace($key, check_plain($val), $text_message);
         }
       }
     }
