@@ -189,7 +189,7 @@ function mailjet_simple_user_register_form_submit($form, &$form_state) {
     $new_mail = $form_state['values']['mail'];
     $old_mail = $form['account']['mail']['#default_value'];
 
-    if ($new_mail !== $old_mail) {
+    if (!empty($new_mail) && !empty($old_mail) && $new_mail !== $old_mail) {
       $all_lists_by_user = mailjet_simple_get_list_ids_by_mail($old_mail);
       $unsubscribe_lists = [];
       $unsubscribe_values = array(
