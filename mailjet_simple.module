@@ -179,16 +179,17 @@ function mailjet_simple_user_register_form_submit($form, &$form_state) {
       ];
     }
 
-    // Allow other modules to update the values array.
-    drupal_alter('mailjet_simple_update_contact_submit', $values, $lists, $form_state);
+    // Allow other modules to update the variables.
+    drupal_alter('mailjet_simple_update_contact_submit', $values, $lists, $form, $form_state);
 
     // Create the contact object in Mailjet.
     $contact = $api->updateContact($values, $lists);
 
-    // Delete old contact objects in Mailjet email address is changed.
+    // Get new email address if changed and old email address as per default drupal config.
     $new_mail = $form_state['values']['mail'];
     $old_mail = $form['account']['mail']['#default_value'];
 
+    // Delete old contact objects in Mailjet email address is changed.
     if (!empty($new_mail) && !empty($old_mail) && $new_mail !== $old_mail) {
       $all_lists_by_user = mailjet_simple_get_list_ids_by_mail($old_mail);
       $unsubscribe_lists = [];
