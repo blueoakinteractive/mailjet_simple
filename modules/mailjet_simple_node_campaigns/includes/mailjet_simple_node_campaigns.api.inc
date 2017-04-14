@@ -108,7 +108,7 @@ class MailJetSimpleNodeCampaigns extends MailJetSimple {
       return $response->getData();
     }
     else {
-      drupal_set_message(t('There was an error sending your campaign.  This is usually because the sending email address (ie: site_mail) does not match a valid sending address in your Mailjet account.'), 'error');
+      drupal_set_message(t('There was an error sending your campaign.  This is usually because the sending email address (ie: site_mail) does not match a valid sending address in your Mailjet account or the Mailjet list has 0 subscribed contacts.'), 'error');
       return $response->getData();
     }
     return [];
