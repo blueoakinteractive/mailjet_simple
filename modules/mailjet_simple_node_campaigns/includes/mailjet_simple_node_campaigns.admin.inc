@@ -35,7 +35,7 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
         '#type' => 'fieldset',
         '#title' => $content_types[$key],
         '#collapsible' => TRUE,
-        '#collapsed' => !empty($node_campaign_settings[$key]['node_campaign_enabled']) ? FALSE : TRUE,
+        '#collapsed' => empty($node_campaign_settings[$key]['node_campaign_enabled']),
       );
 
       $form['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_enabled'] = array(
