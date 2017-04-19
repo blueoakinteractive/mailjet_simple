@@ -90,17 +90,12 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
  * Validation handler for mailjet_simple_node_campaigns_admin_settings_form().
  */
 function mailjet_simple_node_campaigns_admin_settings_form_validate($form, &$form_state) {
-  $content_types = node_type_get_types();
 
-  foreach ($content_types as $key => $type) {
-    $content_types[$key] = t($type->name);
-
-    if ($form_state['values']['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_enabled'] == FALSE) {
-      return;
+  // Loop over node types to ensure that a list is selected on save
+  foreach (node_type_get_types() as $key => $type) {
+    if ($form_state['values']['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_enabled'] && empty($form_state['values']['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_list'])) {
+      form_set_error('mailjet_simple_node_campaigns_settings][' . $key . '][node_campaign_list', t('A Mailjet list must be selected to enable Node Campaigns for \'@type\'.', array('@type' => $type->name)));
     }
-    else if (empty($form_state['values']['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_list'])) {
-      form_set_error('mailjet_simple_node_campaigns_settings][' . $key . '][node_campaign_list', t('A Mailjet list must be selected to enable this feature for \'@type\'.', array('@type' => $content_types[$key])));
-    }
-
   }
+
 }
