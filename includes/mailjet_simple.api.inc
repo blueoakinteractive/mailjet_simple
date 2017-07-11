@@ -25,6 +25,19 @@ class MailJetSimple {
   }
 
   /**
+   * Makes sure the API endpoint is available.
+   */
+  public function ping() {
+    $ping_url = 'https://api.mailjet.com/v3/REST/preferences';
+    $guzzle = new \GuzzleHttp\Client(['timeout' => 5]);
+    $ping = $guzzle->request('GET', $ping_url);
+    if (empty($ping)) {
+      throw new \Exception('Unable to ping the MailJet API');
+    }
+    return TRUE;
+  }
+
+  /**
    * Fetches the list information for a contact by their email.
    *
    * @param $email string

@@ -166,6 +166,13 @@ function mailjet_simple_get_subscription_form(&$form) {
 function mailjet_simple_user_register_form_submit($form, &$form_state) {
   if (!empty($form_state['values']['mailjet_simple']['contact_lists'])) {
     $api = mailjet_simple_get_api();
+
+    // Make sure the API is available.
+    if (!$api) {
+      drupal_set_message('We are unable to register you at this time. Please try again later or contact us.', 'error');
+      return FALSE;
+    }
+
     $values = array(
       'Email' => $form_state['values']['mail'],
     );
@@ -280,13 +287,25 @@ function mailjet_simple_options_list($api = FALSE) {
  * @return \MailJetSimple
  */
 function mailjet_simple_get_api() {
+  $api = &drupal_static(__FUNCTION__);
+  if (isset($api)) {
+    return $api;
+  }
+
   $settings = variable_get('mailjet_simple_settings');
   try {
-    return new MailJetSimple($settings['public_key'], $settings['private_key']);
+    $api = new MailJetSimple($settings['public_key'], $settings['private_key']);
+    // Make sure the API provides a response.
+    if ($api->ping()) {
+      return $api;
+    }
   } catch (Exception $ex) {
-    watchdog('mailjet_simple', t('Unable to bootstrap MailJet API'));
-    return NULL;
+    watchdog('mailjet_simple', t('Unable to bootstrap MailJet API due to @message'), array('@message' => $ex->getMessage()));
   }
+
+  // Set the static object to false so that we don't try again.
+  $api = FALSE;
+  return NULL;
 }
 
 /**
@@ -338,6 +357,13 @@ function mailjet_simple_user_cancel($edit, $account, $method) {
 function mailjet_simple_unsubscribe_all_lists($account) {
   if (!empty($account)) {
     $api = mailjet_simple_get_api();
+
+    // Make sure the API is available.
+    if (!$api) {
+      drupal_set_message('We are unable to unsubscribe you at this time. Please try again later or contact us.', 'error');
+      return FALSE;
+    }
+
     $active_subscription_lists = mailjet_simple_get_list_ids_by_mail($account->mail);
     $lists = [];
     $values = array(
