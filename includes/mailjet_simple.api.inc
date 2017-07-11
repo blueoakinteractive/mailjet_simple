@@ -7,6 +7,9 @@
 use \Mailjet\Resources;
 
 class MailJetSimple {
+  private $private_key;
+  private $public_key;
+
   protected $api;
 
   /**
@@ -18,6 +21,8 @@ class MailJetSimple {
    * @throws \Exception
    */
   public function __construct($public_key, $private_key) {
+    $this->public_key = $public_key;
+    $this->private_key = $private_key;
     $this->api = new \Mailjet\Client($public_key, $private_key);
     if (!(is_a($this->api, '\MailJet\Client'))) {
       throw new Exception('Unable to invoke the MailJet Client API');
@@ -26,14 +31,39 @@ class MailJetSimple {
 
   /**
    * Makes sure the API endpoint is available.
+   *
+   * @return bool
+   * @throws \Exception
    */
   public function ping() {
-    $ping_url = 'https://api.mailjet.com/v3/REST/preferences';
+    // Ping the api key access url with a 5 second timeout.
+    $ping_url = 'https://api.mailjet.com/v3/REST/apikeyaccess';
     $guzzle = new \GuzzleHttp\Client(['timeout' => 5]);
-    $ping = $guzzle->request('GET', $ping_url);
+
+    // Add authentication parameters.
+    $options = [
+      'auth' => [
+        $this->public_key,
+        $this->private_key
+      ]
+    ];
+
+    // Attempt to ping and authenticate with the endpoint.
+    // Throw exceptions whenever a ping is unsuccessful.
+    try {
+      $ping = $guzzle->request('GET', $ping_url, $options);
+    }
+    catch (Exception $ex) {
+      if ($ex->getCode() == 401) {
+        throw new Exception('Unable to authenticate with MailJet. Please check your API keys.');
+      }
+      throw $ex;
+    }
+
     if (empty($ping)) {
       throw new \Exception('Unable to ping the MailJet API');
     }
+
     return TRUE;
   }
 
