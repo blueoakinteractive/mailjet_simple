@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "16c371bd5dfaac79fb1b043604034957",
-    "content-hash": "1f93c32d9616fa93331ee5c284b0f867",
+    "content-hash": "2c30abf26023a6e38ff56e901c1f848c",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -67,7 +66,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2016-10-08 15:01:37"
+            "time": "2016-10-08T15:01:37+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -118,7 +117,7 @@
             "keywords": [
                 "promise"
             ],
-            "time": "2016-12-20 10:07:11"
+            "time": "2016-12-20T10:07:11+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -176,20 +175,20 @@
                 "stream",
                 "uri"
             ],
-            "time": "2016-06-24 23:00:38"
+            "time": "2016-06-24T23:00:38+00:00"
         },
         {
             "name": "mailjet/mailjet-apiv3-php",
-            "version": "v1.1.8",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mailjet/mailjet-apiv3-php.git",
-                "reference": "dcf05767a69ad7b9c824f148435760d97bcdead7"
+                "reference": "d578bb6edc8cbbf39230d1ce5534427b7172fc7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mailjet/mailjet-apiv3-php/zipball/dcf05767a69ad7b9c824f148435760d97bcdead7",
-                "reference": "dcf05767a69ad7b9c824f148435760d97bcdead7",
+                "url": "https://api.github.com/repos/mailjet/mailjet-apiv3-php/zipball/d578bb6edc8cbbf39230d1ce5534427b7172fc7f",
+                "reference": "d578bb6edc8cbbf39230d1ce5534427b7172fc7f",
                 "shasum": ""
             },
             "require": {
@@ -225,7 +224,7 @@
                 "php",
                 "v3"
             ],
-            "time": "2016-11-22 14:53:36"
+            "time": "2017-05-22T12:38:16+00:00"
         },
         {
             "name": "psr/http-message",
@@ -275,7 +274,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-06 14:39:51"
+            "time": "2016-08-06T14:39:51+00:00"
         }
     ],
     "packages-dev": [],

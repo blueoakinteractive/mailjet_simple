@@ -1,5 +1,5 @@
 {
   "require": {
-    "mailjet/mailjet-apiv3-php": ">=1.0.1"
+    "mailjet/mailjet-apiv3-php": "1.2.0"
   }
 }
