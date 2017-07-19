@@ -71,6 +71,12 @@ function mailjet_simple_admin_settings_form($form) {
     '#default_value' => $settings['additional_settings']['cancel_delete'],
     '#description' => t('Unsubscribe users automatically on user delete or cancel.'),
   );
+  $form['mailjet_simple_settings']['additional_settings']['user_register'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Subscribe on User Registration'),
+    '#default_value' => $settings['additional_settings']['user_register'],
+    '#description' => t('Show subscription options on the user registration form.'),
+  );
 
   return system_settings_form($form);
 }
