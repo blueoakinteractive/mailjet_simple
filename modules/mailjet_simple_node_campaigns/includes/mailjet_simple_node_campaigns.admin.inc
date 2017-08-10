@@ -76,6 +76,19 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
         ),
       );
 
+      $form['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_email'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Specify a From/Reply Email Address'),
+        '#default_value' => !empty($node_campaign_settings[$key]['node_campaign_email']) ? $node_campaign_settings[$key]['node_campaign_email'] : variable_get('site_mail', 'example@example.com'),
+        '#description' => t('Specify the email address you would like to use as your from/reply address for \'@type\' campaigns. Note: This email address needs to be configured in your Mailjet account otherwise the campaign will not be sent. See <a href="@url" target="_blank">Mailjet documentation</a> for more information.', array('@url' => 'https://www.mailjet.com/support/am-i-limited-to-one-email-sending-address,96.htm', '@type' => $content_types[$key])),
+        '#states' => array(
+          // Hide the field when node_campaign_enabled has not been checked.
+          'invisible' => array(
+            ':input[name="mailjet_simple_node_campaigns_settings[' . $key . '][node_campaign_enabled]"]' => array('checked' => FALSE),
+          ),
+        ),
+      );
+
     }
 
   }
