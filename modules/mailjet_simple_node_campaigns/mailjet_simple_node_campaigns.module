@@ -97,6 +97,13 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
       '#description' => t('Select a template that will be associated with this node campaign if you would like your email styled.'),
     );
 
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_email'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Specify a From/Reply Email Address'),
+      '#default_value' => !empty($settings[$content_type]['node_campaign_email']) ? $settings[$content_type]['node_campaign_email'] : variable_get('site_mail', 'example@example.com'),
+      '#description' => t('Specify the email address you would like to use as your from/reply address for this campaign. Note: This email address needs to be configured in your Mailjet account otherwise the campaign will not be sent. See <a href="@url" target="_blank">Mailjet documentation</a> for more information.', array('@url' => 'https://www.mailjet.com/support/am-i-limited-to-one-email-sending-address,96.htm')),
+    );
+
     $form['#validate'][] = 'mailjet_simple_node_campaigns_form_node_form_validate';
     $form['#submit'][] = 'mailjet_simple_node_campaigns_form_node_form_submit';
   }
@@ -119,7 +126,20 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
   // If node is marked to create and send a campaign prepare a campaign draft.
   if (!empty($form_state['values']['create_and_send'])) {
     // Prepare Mailjet campaign (ie: create and send).
-    mailjet_simple_node_campaigns_prepare_campaign_draft($form_state['values']['node_campaign_settings_overrides']['node_campaign_list'], $title = $form_state['values']['title'], $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'], $form_state['values']['node_campaign_settings_overrides']['node_campaign_template']);
+    $list_id = $form_state['values']['node_campaign_settings_overrides']['node_campaign_list'];
+    $title = $form_state['values']['title'];
+    $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'];
+    $template_id = $form_state['values']['node_campaign_settings_overrides']['node_campaign_template'];
+
+    // Additional "Optional" arguments.
+    $arguments = array();
+
+    // Specify From/Reply address if one is specified.
+    if (!empty($form_state['values']['node_campaign_settings_overrides']['node_campaign_email'])) {
+      $arguments['SenderEmail'] = check_plain($form_state['values']['node_campaign_settings_overrides']['node_campaign_email']);
+    }
+
+    mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $arguments);
   }
 }
 
@@ -219,14 +239,29 @@ function mailjet_simple_node_campaigns_get_template_detail($template_id) {
  *
  * @param string $message
  *    Content to be posted as message on associated campaign.
+ *
+ * @param array $arguments
+ *    An array of additional arguments used to prepare the campaign.
+ *    https://dev.mailjet.com/email-api/v3/campaigndraft/
+ *
+ *    Example:
+ *    $arguments = array(
+ *      'Locale' => "en_US",
+ *      'Sender' => "Sender Name",
+ *      'SenderName' => "Sender Name",
+ *      'SenderEmail' => "sender@email.address",
+ *    );
  */
-function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL) {
-  // Create Mailjet campaign.
-  $arguments_create_campaign = array(
-    'Subject' => "$title",
+function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL, array $arguments) {
+  // Define Mailjet campaign defaults.
+  $argument_defaults = array(
     'ContactsListID' => "$list_id",
+    'Subject' => "$title",
     'Title' => "$title",
   );
+
+  // Overriding existing arguments and adding new ones.
+  $arguments_create_campaign = array_merge($argument_defaults, $arguments);
 
   $campaign = mailjet_simple_node_campaigns_create_campaign_draft($arguments_create_campaign);
 
