@@ -19,6 +19,28 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
       '#tree' => TRUE,
     );
 
+    // Create a list of available text_formats.
+    $text_formats = array(NULL => t('- None -'));
+    foreach (filter_formats() as $key => $text_format) {
+      $text_formats[$key] = $text_format->name;
+    }
+
+    // Build a fieldset of advanced options.
+    $form['mailjet_simple_node_campaigns_settings']['advanced_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Advanced Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+    $form['mailjet_simple_node_campaigns_settings']['advanced_settings']['text_format'] = array(
+      '#type' => 'select',
+      '#title' => t('Text Format'),
+      '#options' => $text_formats,
+      '#default_value' => !empty($node_campaign_settings['advanced_settings']['text_format']) ? $node_campaign_settings['advanced_settings']['text_format'] : 0,
+      '#description' => t('Select the text format that you would like to use to sanitize your node campaign content with. To create a new text format, visit the <a href="@url">text format administration page</a>.', array('@url' => url('admin/config/content/formats'))),
+    );
+
     // Create a list of mailjet lists.
     $lists = array(0 => t('- Disabled -')) + mailjet_simple_options_list();
 
