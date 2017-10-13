@@ -139,8 +139,28 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
       $arguments['SenderEmail'] = check_plain($form_state['values']['node_campaign_settings_overrides']['node_campaign_email']);
     }
 
-    mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $arguments);
+    // Specify the text format to be used when sanitizing the message.
+    $advanced_settings = mailjet_simple_node_campaigns_get_setting('advanced_settings');
+    $text_format = !(empty($advanced_settings['text_format'])) ? $advanced_settings['text_format'] : NULL;
+
+    // Send the node campaign.
+    mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $text_format, $arguments);
   }
+}
+
+/**
+ * Helper function that returns the specified node campaign setting.
+ */
+function mailjet_simple_node_campaigns_get_setting($setting = NULL) {
+  // Load all node campaign settings.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+  // If a setting is requested in this function call return it.
+  if (!empty($setting)) {
+    return !empty($settings[$setting]) ? $settings[$setting] : FALSE;
+  }
+
+  return $settings;
 }
 
 
@@ -240,6 +260,12 @@ function mailjet_simple_node_campaigns_get_template_detail($template_id) {
  * @param string $message
  *    Content to be posted as message on associated campaign.
  *
+ * @param string $template_id
+ *    The ID fo the template to be associated with the campaign.
+ *
+ * @param string $text_format
+ *    The text format to be used to sanitize $mailjet_template_vars values.
+ *
  * @param array $arguments
  *    An array of additional arguments used to prepare the campaign.
  *    https://dev.mailjet.com/email-api/v3/campaigndraft/
@@ -252,7 +278,7 @@ function mailjet_simple_node_campaigns_get_template_detail($template_id) {
  *      'SenderEmail' => "sender@email.address",
  *    );
  */
-function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL, array $arguments) {
+function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL, $text_format = NULL, array $arguments) {
   // Define Mailjet campaign defaults.
   $argument_defaults = array(
     'ContactsListID' => "$list_id",
@@ -299,7 +325,7 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
         $html_message = $detail[0]['Html-part'];
         $text_message = $detail[0]['Text-part'];
         foreach ($mailjet_template_vars as $key => $val) {
-          $html_message = str_replace($key, check_markup($val), $html_message);
+          $html_message = str_replace($key, check_markup($val, $text_format), $html_message);
           $text_message = str_replace($key, check_plain($val), $text_message);
         }
       }
@@ -307,7 +333,7 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
 
     // Create Mailjet campaign content.
     $arguments_create_campaign_content = array(
-      'Html-part' => !empty($html_message) ? $html_message : check_markup($message),
+      'Html-part' => !empty($html_message) ? $html_message : check_markup($message, $text_format),
       'Text-part' => !empty($text_message) ? $text_message : check_plain($message),
     );
 
