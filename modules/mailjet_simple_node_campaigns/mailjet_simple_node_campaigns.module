@@ -151,12 +151,16 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
 /**
  * Helper function that returns the specified node campaign setting.
  */
-function mailjet_simple_node_campaigns_get_setting($setting) {
+function mailjet_simple_node_campaigns_get_setting($setting = NULL) {
+  // Load all node campaign settings.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+  // If a setting is requested in this function call return it.
   if (!empty($setting)) {
-    $settings = variable_get('mailjet_simple_node_campaigns_settings');
-    $result = $settings[$setting];
-    return $result;
+    return !empty($settings[$setting]) ? $settings[$setting] : FALSE;
   }
+
+  return $settings;
 }
 
 
