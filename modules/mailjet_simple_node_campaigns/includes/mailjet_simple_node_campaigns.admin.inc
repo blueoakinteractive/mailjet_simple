@@ -37,7 +37,7 @@ function mailjet_simple_node_campaigns_admin_settings_form($form) {
       '#type' => 'select',
       '#title' => t('Text Format'),
       '#options' => $text_formats,
-      '#default_value' => !empty($node_campaign_settings['advanced_settings']['text_format']) ? $node_campaign_settings['advanced_settings']['text_format'] : 0,
+      '#default_value' => !empty($node_campaign_settings['advanced_settings']['text_format']) ? $node_campaign_settings['advanced_settings']['text_format'] : NULL,
       '#description' => t('Select the text format that you would like to use to sanitize your node campaign content with. To create a new text format, visit the <a href="@url">text format administration page</a>.', array('@url' => url('admin/config/content/formats'))),
     );
 
