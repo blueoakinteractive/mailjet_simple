@@ -141,7 +141,7 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
 
     // Specify the text format to be used when sanitizing the message.
     $advanced_settings = mailjet_simple_node_campaigns_get_setting('advanced_settings');
-    $text_format = $advanced_settings['text_format'] ? $advanced_settings['text_format'] : NULL;
+    $text_format = !(empty($advanced_settings['text_format'])) ? $advanced_settings['text_format'] : NULL;
 
     // Send the node campaign.
     mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $text_format, $arguments);
