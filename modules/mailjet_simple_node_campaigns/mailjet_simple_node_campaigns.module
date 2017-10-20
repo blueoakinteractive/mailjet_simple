@@ -126,6 +126,7 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
   // If node is marked to create and send a campaign prepare a campaign draft.
   if (!empty($form_state['values']['create_and_send'])) {
     // Prepare Mailjet campaign (ie: create and send).
+    $node = $form_state['node'];
     $list_id = $form_state['values']['node_campaign_settings_overrides']['node_campaign_list'];
     $title = $form_state['values']['title'];
     $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'];
@@ -144,7 +145,7 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
     $text_format = !(empty($advanced_settings['text_format'])) ? $advanced_settings['text_format'] : NULL;
 
     // Send the node campaign.
-    mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $text_format, $arguments);
+    mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $text_format, $node, $arguments);
   }
 }
 
@@ -266,6 +267,9 @@ function mailjet_simple_node_campaigns_get_template_detail($template_id) {
  * @param string $text_format
  *    The text format to be used to sanitize $mailjet_template_vars values.
  *
+ * @param object $node
+ *    The node object used to build the campaign. Used for alter context.
+ *
  * @param array $arguments
  *    An array of additional arguments used to prepare the campaign.
  *    https://dev.mailjet.com/email-api/v3/campaigndraft/
@@ -278,7 +282,7 @@ function mailjet_simple_node_campaigns_get_template_detail($template_id) {
  *      'SenderEmail' => "sender@email.address",
  *    );
  */
-function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL, $text_format = NULL, array $arguments) {
+function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id = NULL, $text_format = NULL, $node = NULL, array $arguments) {
   // Define Mailjet campaign defaults.
   $argument_defaults = array(
     'ContactsListID' => "$list_id",
@@ -312,6 +316,7 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
         'title' => $title,
         'message' => $message,
         'template_id' => $template_id,
+        'node' => $node,
       ];
 
       // Allow other modules to alter the template vars for replacement.
