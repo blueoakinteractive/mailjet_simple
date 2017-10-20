@@ -322,6 +322,24 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
         '{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_BODY }}' => $message,
       ];
 
+      if (!empty($node)) {
+        // If the Mailjet Simple Node Campaigns Node View is enabled
+        // for this node type create additional template vars.
+        $view_modes = field_view_mode_settings('node', $node->type);
+        if (!empty($view_modes['mailjet_simple_node_campaigns']['custom_settings'])) {
+          $node_campaign_view = node_view($node, $view_mode = 'mailjet_simple_node_campaigns', $langcode = NULL);
+          $node_campaign_variables = element_get_visible_children($node_campaign_view);
+          foreach ($node_campaign_variables as $node_campaign_variable) {
+            $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_' . strtoupper($node_campaign_variable) . ' }}'] = render(field_view_field('node', $node, $node_campaign_variable, 'mailjet_simple_node_campaigns'));
+          }
+        }
+
+        // Create new template link variables dependent on node object.
+        GLOBAL $base_url;
+        $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_URL }}'] = url('node/' . $node->nid, array('absolute' => TRUE));
+        $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_LINK }}'] = l(t('Read More'), 'node/' . $node->nid, array('absolute' => TRUE, 'attributes' => array('class' => array('button'))));
+      }
+
       // Build a context array to pass to the alter method.
       $context = [
         'list_id' => $list_id,
