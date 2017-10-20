@@ -125,10 +125,7 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
  * Form validation handler.
  */
 function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_state) {
-  // Set error message if node is to be sent as a campaign and the body field is empty.
-  if (!empty($form_state['values']['create_and_send']) && empty($form_state['values']['body'][LANGUAGE_NONE][0]['value'])) {
-    form_set_error('body', 'The body field is required as it is used as the Mailjet campaign body for this content.');
-  }
+  // @todo: add error messages if needed.
 }
 
 /**
@@ -141,7 +138,7 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
     $node = $form_state['node'];
     $list_id = $form_state['values']['node_campaign_settings_overrides']['node_campaign_list'];
     $title = $form_state['values']['title'];
-    $message = $form_state['values']['body'][LANGUAGE_NONE][0]['value'];
+    $message = !empty($form_state['values']['body'][LANGUAGE_NONE][0]['value']) ? $form_state['values']['body'][LANGUAGE_NONE][0]['value'] : NULL;
     $template_id = $form_state['values']['node_campaign_settings_overrides']['node_campaign_template'];
 
     // Additional "Optional" arguments.
