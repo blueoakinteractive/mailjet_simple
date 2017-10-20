@@ -330,7 +330,7 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
           $node_campaign_view = node_view($node, $view_mode = 'mailjet_simple_node_campaigns', $langcode = NULL);
           $node_campaign_variables = element_get_visible_children($node_campaign_view);
           foreach ($node_campaign_variables as $node_campaign_variable) {
-            $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_' . strtoupper($node_campaign_variable) . ' }}'] = render(field_view_field('node', $node, $node_campaign_variable, 'mailjet_simple_node_campaigns'));
+            $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_' . strtoupper($node_campaign_variable) . ' }}'] = render($node_campaign_view[$node_campaign_variable]);
           }
         }
 
