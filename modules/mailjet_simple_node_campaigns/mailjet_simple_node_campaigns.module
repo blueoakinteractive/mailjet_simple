@@ -125,7 +125,7 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
  * Form validation handler.
  */
 function mailjet_simple_node_campaigns_form_node_form_validate($form, &$form_state) {
-  // @todo: add error messages if needed.
+  // TODO: add error messages if needed.
 }
 
 /**
