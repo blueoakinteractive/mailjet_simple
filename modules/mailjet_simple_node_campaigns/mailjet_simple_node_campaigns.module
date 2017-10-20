@@ -20,6 +20,18 @@ function mailjet_simple_node_campaigns_menu() {
 }
 
 /**
+ * Implements hook_entity_info_alter().
+ */
+function mailjet_simple_node_campaigns_entity_info_alter(&$entity_info) {
+  // Creates new Node Campaign view mode which will allow administrators
+  // to create new variables easily via the Drupal UI.
+  $entity_info['node']['view modes']['mailjet_simple_node_campaigns'] = array(
+    'label' => t('Node Campaign'),
+    'custom settings' => FALSE,
+  );
+}
+
+/**
  * Returns an options array of available templates.
  *
  * @return array
