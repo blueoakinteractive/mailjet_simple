@@ -102,7 +102,13 @@ function mailjet_simple_form_user_profile_form_alter(&$form, &$form_state) {
  * Block form callback.
  */
 function mailjet_simple_newsletter_block_form($form, &$form_state) {
-  global $user;
+  // Load user from current path if available
+  // otherwise fallback to current logged in user.
+  $user = menu_get_object('user', 1);
+
+  if (empty($user)) {
+    global $user;
+  };
 
   if (!empty($user->uid)) {
     // Add fields that the submit handler expects.
