@@ -363,6 +363,14 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
       }
     }
 
+    // Strip empty tags from markup.
+    preg_match_all('/({{ MAILJET_SIMPLE_NODE_CAMPAIGNS_)\w+ (}})/', $html_message, $matches);
+
+    foreach ($matches[0] as $match) {
+      $html_message = str_replace($match, '', $html_message);
+      $text_message = str_replace($match, '', $text_message);
+    }
+
     // Create Mailjet campaign content.
     $arguments_create_campaign_content = array(
       'Html-part' => !empty($html_message) ? $html_message : check_markup($message, $text_format),
