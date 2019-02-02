@@ -239,7 +239,7 @@ function mailjet_simple_node_campaigns_send_campaign_draft($campaign_id) {
  */
 function mailjet_simple_node_campaigns_get_templates($template_id = NULL) {
   $api = mailjet_simple_node_campaigns_get_api();
-  $result = $api->getTemplates($template_id);
+  $result = $api->getTemplates($template_id, ['Limit' => '999']);
   return $result;
 }
 
