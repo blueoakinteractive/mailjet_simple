@@ -139,10 +139,10 @@ class MailJetSimpleNodeCampaigns extends MailJetSimple {
 
     // If the template id is provided load the template else load all user templates.
     if (!empty($template_id)) {
-      $response = $this->api->get(Resources::$Template, ['id' => $template_id], ['filters' => $filters]);
+      $response = $this->api->get(Resources::$Template, ['id' => $template_id], ['filters' => $properties]);
     }
     else {
-      $response = $this->api->get(Resources::$Template, ['filters' => $filters]);
+      $response = $this->api->get(Resources::$Template, ['filters' => $properties]);
     }
 
     return $response->getData();
