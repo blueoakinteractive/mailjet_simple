@@ -334,7 +334,7 @@ function mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, 
         // Create new template link variables dependent on node object.
         GLOBAL $base_url;
         $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_URL }}'] = url('node/' . $node->nid, array('absolute' => TRUE));
-        $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_LINK }}'] = l(t('Read More'), 'node/' . $node->nid, array('absolute' => TRUE, 'attributes' => array('class' => array('button'))));
+        $mailjet_template_vars['{{ MAILJET_SIMPLE_NODE_CAMPAIGNS_LINK }}'] = l(t('View Online'), 'node/' . $node->nid, array('absolute' => TRUE));
       }
 
       // Build a context array to pass to the alter method.
