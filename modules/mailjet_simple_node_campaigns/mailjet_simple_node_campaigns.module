@@ -91,11 +91,30 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
       '#tree' => TRUE,
     );
 
+    // Set node campaign variable defaults.
+    $node_campaign_list_value = !empty($settings[$content_type]['node_campaign_list']) ? $settings[$content_type]['node_campaign_list'] : 0;
+    $node_campaign_template_value = !empty($settings[$content_type]['node_campaign_template']) ? $settings[$content_type]['node_campaign_template'] : 0;
+    $node_campaign_email_value = !empty($settings[$content_type]['node_campaign_email']) ? $settings[$content_type]['node_campaign_email'] : variable_get('site_mail', 'example@example.com');
+
+    // If this node already exists let's populate our saved node overrides.
+    if (!empty($form['nid']['#value'])) {
+      $nid = $form['nid']['#value'];
+
+      $node_campaign_list_value_override = variable_get('node_campaign_list_' . $nid);
+      $node_campaign_list_value = isset($node_campaign_list_value_override) ? $node_campaign_list_value_override : $node_campaign_list_value;
+
+      $node_campaign_template_value_override = variable_get('node_campaign_template_' . $nid);
+      $node_campaign_template_value = isset($node_campaign_template_value_override) ? $node_campaign_template_value_override : $node_campaign_template_value;
+
+      $node_campaign_email_value_override = variable_get('node_campaign_email_' . $nid);
+      $node_campaign_email_value = isset($node_campaign_email_value_override) ? $node_campaign_email_value_override : $node_campaign_email_value;
+    }
+
     $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_list'] = array(
       '#type' => 'select',
       '#title' => t('Select a List'),
       '#options' => mailjet_simple_options_list(),
-      '#default_value' => !empty($settings[$content_type]['node_campaign_list']) ? $settings[$content_type]['node_campaign_list'] : 0,
+      '#default_value' => $node_campaign_list_value,
       '#description' => t('Select the list that you would like to tie to this node campaign.'),
     );
 
@@ -105,14 +124,14 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
       '#type' => 'select',
       '#title' => t('Select a Template'),
       '#options' => $templates,
-      '#default_value' => !empty($settings[$content_type]['node_campaign_template']) ? $settings[$content_type]['node_campaign_template'] : 0,
+      '#default_value' => $node_campaign_template_value,
       '#description' => t('Select a template that will be associated with this node campaign if you would like your email styled.'),
     );
 
     $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_email'] = array(
       '#type' => 'textfield',
       '#title' => t('Specify a From/Reply Email Address'),
-      '#default_value' => !empty($settings[$content_type]['node_campaign_email']) ? $settings[$content_type]['node_campaign_email'] : variable_get('site_mail', 'example@example.com'),
+      '#default_value' => $node_campaign_email_value,
       '#description' => t('Specify the email address you would like to use as your from/reply address for this campaign. Note: This email address needs to be configured in your Mailjet account otherwise the campaign will not be sent. See <a href="@url" target="_blank">Mailjet documentation</a> for more information.', array('@url' => 'https://www.mailjet.com/support/am-i-limited-to-one-email-sending-address,96.htm')),
     );
 
@@ -151,10 +170,28 @@ function mailjet_simple_node_campaigns_form_node_form_submit($form, &$form_state
 
     // Specify the text format to be used when sanitizing the message.
     $advanced_settings = mailjet_simple_node_campaigns_get_setting('advanced_settings');
-    $text_format = !(empty($advanced_settings['text_format'])) ? $advanced_settings['text_format'] : NULL;
+    $text_format = !empty($advanced_settings['text_format']) ? $advanced_settings['text_format'] : NULL;
 
     // Send the node campaign.
     mailjet_simple_node_campaigns_prepare_campaign_draft($list_id, $title, $message, $template_id, $text_format, $node, $arguments);
+  }
+}
+
+/**
+ * Implements hook_node_presave().
+ */
+function mailjet_simple_node_presave($node) {
+  mailjet_simple_node_campaigns_set_variables($node);
+}
+
+/**
+ * Helper function that sets the node campaign variables for an individual node.
+ */
+function mailjet_simple_node_campaigns_set_variables($node) {
+  if (!empty($node->node_campaign_settings_overrides)) {
+    foreach($node->node_campaign_settings_overrides as $variable => $value) {
+      variable_set($variable . '_' . $node->nid, $value);
+    }
   }
 }
 
