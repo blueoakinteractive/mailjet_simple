@@ -1,0 +1,10 @@
+name = MailJet Simple Node Campaigns: Scheduler
+description = Integrates MailJet Simple Node Campaigns with the Scheduler module to create campaigns / send emails on a scheudle.
+core = 7.x
+
+dependencies[] = rules
+dependencies[] = scheduler
+dependencies[] = mailjet_simple
+dependencies[] = mailjet_simple_node_campaigns
+
+files[] = mailjet_simple_node_campaigns_scheduler.rules.inc
