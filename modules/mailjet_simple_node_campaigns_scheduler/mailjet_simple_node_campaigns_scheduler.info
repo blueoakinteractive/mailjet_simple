@@ -8,3 +8,4 @@ dependencies[] = mailjet_simple
 dependencies[] = mailjet_simple_node_campaigns
 
 files[] = mailjet_simple_node_campaigns_scheduler.rules.inc
+files[] = mailjet_simple_node_campaigns_scheduler.rules_defaults.inc
