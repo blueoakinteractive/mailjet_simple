@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * Alter the mailjet_simple_node_campaigns_admin_settings_form to
+ * add defaults for sending node campaigns with scheduler.
+ *
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mailjet_simple_node_campaigns_scheduler_form_mailjet_simple_node_campaigns_admin_settings_form_alter(&$form, $form_state) {
+  // Load node campaign form settings
+  $node_campaign_settings = variable_get('mailjet_simple_node_campaigns_settings');
+
+  // Create a list of node types.
+  $content_types = node_type_get_types();
+
+  foreach ($content_types as $key => $type) {
+    $content_types[$key] = t($type->name);
+
+    $form['mailjet_simple_node_campaigns_settings'][$key]['node_campaign_send_on_publish'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create and Send Campaign when node is published via scheduler?', array('@type' => $content_types[$key])),
+      '#description' => t('Specify if \'@type\' node campaigns should be sent by default when published via <a href="@scheduler_url">scheduler</a>.', array('@scheduler_url' => url('https://www.drupal.org/project/scheduler'), '@type' => $content_types[$key])),
+      '#default_value' => !empty($node_campaign_settings[$key]['node_campaign_send_on_publish']) ? $node_campaign_settings[$key]['node_campaign_send_on_publish'] : 0,
+      '#states' => array(
+        // Hide the field when node_campaign_enabled has not been checked.
+        'invisible' => array(
+          ':input[name="mailjet_simple_node_campaigns_settings[' . $key . '][node_campaign_enabled]"]' => array('checked' => FALSE),
+        ),
+      ),
+    );
+  }
+}
+
+/**
+ * Alter node_form's to include node campaign scheduler overrides.
+ *
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mailjet_simple_node_campaigns_scheduler_form_node_form_alter(&$form, $form_state) {
+  // Load admin configured settings variables.
+  $settings = variable_get('mailjet_simple_node_campaigns_settings');
+  $content_type = $form['type']['#value'];
+
+  // Alter node form configured to be used as a node campaign.
+  if (!empty($settings[$content_type]['node_campaign_enabled'])) {
+
+    // Override node campaigns js.
+    $form['mailjet_simple_node_campaigns_settings']['#attached']['js'] =  array(
+      drupal_get_path('module', 'mailjet_simple_node_campaigns_scheduler') . '/mailjet-simple-node-campaigns-scheduler-node-form.js'
+    );
+
+    $node_campaign_send_on_publish_value = !empty($settings[$content_type]['node_campaign_send_on_publish']) ? $settings[$content_type]['node_campaign_send_on_publish'] : 0;
+
+    // If this node already exists let's populate our saved node overrides.
+    if (!empty($form['nid']['#value'])) {
+      $nid = $form['nid']['#value'];
+
+      $node_campaign_send_on_publish_value_override = variable_get('node_campaign_send_on_publish_' . $nid);
+      $node_campaign_send_on_publish_value = isset($node_campaign_send_on_publish_value_override) ? $node_campaign_send_on_publish_value_override : $node_campaign_send_on_publish_value;
+    }
+
+    $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_send_on_publish'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create and Send Campaign when node is published via scheduler?'),
+      '#default_value' => $node_campaign_send_on_publish_value,
+    );
+  }
+}
