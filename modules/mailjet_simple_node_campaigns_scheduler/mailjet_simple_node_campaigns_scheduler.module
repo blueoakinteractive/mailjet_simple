@@ -61,7 +61,8 @@ function mailjet_simple_node_campaigns_scheduler_form_node_form_alter(&$form, $f
 
     $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides']['node_campaign_send_on_publish'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Create and Send Campaign when node is published via scheduler?'),
+      '#title' => t('Schedule Delivery'),
+      '#description' => t('Create and Send Campaign when node is published via scheduler? <br /><em>Note: this requires that a publish on date be provided in the "Scheduling options" tab.</em>'),
       '#default_value' => $node_campaign_send_on_publish_value,
     );
   }

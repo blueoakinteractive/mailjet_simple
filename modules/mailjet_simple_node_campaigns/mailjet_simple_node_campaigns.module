@@ -81,13 +81,14 @@ function mailjet_simple_node_campaigns_form_node_form_alter(&$form, $form_state)
 
     $form['mailjet_simple_node_campaigns_settings']['create_and_send'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Create and Send Campaign on Save?'),
+      '#title' => t('Send Now'),
+      '#description' => t('Create and send the campaign now?'),
+      '#weight' => 98,
     );
 
     $form['mailjet_simple_node_campaigns_settings']['node_campaign_settings_overrides'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Override Node Campaign Setting Defaults'),
-      '#description' => t('Update the field data below to override the Node Campaign Setting Defaults for this node campaign.'),
+      '#title' => t('Node Campaign Settings'),
       '#tree' => TRUE,
     );
 
